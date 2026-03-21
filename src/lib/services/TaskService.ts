@@ -79,7 +79,7 @@ export class TaskService extends ServiceMap.Service<
             projectId: Option.getOrNull(payload.projectId) as string | null,
           })
         )
-        return new Task({
+        return {
           id: TaskId.makeUnsafe(id),
           title: payload.title,
           description: payload.description,
@@ -88,7 +88,7 @@ export class TaskService extends ServiceMap.Service<
           projectId: payload.projectId,
           createdAt: new Date(now),
           updatedAt: new Date(now),
-        })
+        } satisfies Task
       })
 
       const update = Effect.fn("TaskService.update")(
@@ -107,7 +107,7 @@ export class TaskService extends ServiceMap.Service<
             db.update(tasks).set(setValues).where(eq(tasks.id, id as string))
           )
 
-          return new Task({
+          return {
             id: existing.id,
             title: "title" in payload ? (payload.title as string) : existing.title,
             description: "description" in payload ? payload.description as Option.Option<string> : existing.description,
@@ -116,7 +116,7 @@ export class TaskService extends ServiceMap.Service<
             projectId: "projectId" in payload ? payload.projectId as Option.Option<ProjectId> : existing.projectId,
             createdAt: existing.createdAt,
             updatedAt: new Date(now),
-          })
+          } satisfies Task
         }
       )
 
@@ -134,7 +134,7 @@ export class TaskService extends ServiceMap.Service<
 }
 
 function toTask(row: typeof tasks.$inferSelect): Task {
-  return new Task({
+  return {
     id: TaskId.makeUnsafe(row.id),
     title: row.title,
     description: row.description ? Option.some(row.description) : Option.none(),
@@ -143,5 +143,5 @@ function toTask(row: typeof tasks.$inferSelect): Task {
     projectId: row.projectId ? Option.some(ProjectId.makeUnsafe(row.projectId)) : Option.none(),
     createdAt: new Date(row.createdAt),
     updatedAt: new Date(row.updatedAt),
-  })
+  } satisfies Task
 }

@@ -58,13 +58,13 @@ export class ViewService extends ServiceMap.Service<
             filters: filtersJson,
           })
         )
-        return new View({
+        return {
           id: ViewId.makeUnsafe(id),
           name: payload.name,
           filters: payload.filters,
           createdAt: new Date(now),
           updatedAt: new Date(now),
-        })
+        } satisfies View
       })
 
       const update = Effect.fn("ViewService.update")(
@@ -92,13 +92,13 @@ export class ViewService extends ServiceMap.Service<
             priority: Option.Option<readonly TaskPriority[]>
             projectId: Option.Option<ProjectId>
           }
-          return new View({
+          return {
             id: existing.id,
             name: "name" in payload ? (payload.name as string) : existing.name,
             filters: "filters" in payload ? (payload.filters as Filters) : existing.filters,
             createdAt: existing.createdAt,
             updatedAt: new Date(now),
-          })
+          } satisfies View
         }
       )
 
@@ -121,7 +121,7 @@ function toView(row: typeof views.$inferSelect): View {
     priority: string[] | null
     projectId: string | null
   }
-  return new View({
+  return {
     id: ViewId.makeUnsafe(row.id),
     name: row.name,
     filters: {
@@ -131,5 +131,5 @@ function toView(row: typeof views.$inferSelect): View {
     },
     createdAt: new Date(row.createdAt),
     updatedAt: new Date(row.updatedAt),
-  })
+  } satisfies View
 }

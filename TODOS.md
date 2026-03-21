@@ -34,7 +34,7 @@ Goal: Connect real persistence via Postgres, Drizzle, and Effect SQL.
 - [x] Wire Drizzle into Effect services via @effect/sql-pg
 
 ## Phase 3.5: Fixes
-- [ ] Fix types using as Type
+- [x] Fix schema class types (convert to `Schema.Struct` instead of `Schema.Class`)
 
 ## Phase 4: Auth
 Goal: Set up authentication with Better Auth integrated via Effect and drizzle.

@@ -2,7 +2,6 @@ import { Effect, Layer } from "effect"
 import { HttpApiBuilder } from "effect/unstable/httpapi"
 import { PallyApi } from "./api"
 import { TaskService, ProjectService, ViewService } from "./services/index"
-import type { CreateTaskPayload, UpdateTaskPayload, CreateProjectPayload, UpdateProjectPayload, CreateViewPayload, UpdateViewPayload } from "./schemas"
 import { DBLive } from "@/db/layer"
 
 // Tasks group implementation
@@ -30,13 +29,13 @@ const tasksGroupLive = HttpApiBuilder.group(
       .handle("createTask", ({ payload }) =>
         Effect.gen(function* () {
           const taskService = yield* TaskService
-          return yield* taskService.create(payload as CreateTaskPayload)
+          return yield* taskService.create(payload)
         })
       )
       .handle("updateTask", ({ params, payload }) =>
         Effect.gen(function* () {
           const taskService = yield* TaskService
-          return yield* taskService.update(params.id, payload as UpdateTaskPayload)
+          return yield* taskService.update(params.id, payload)
         })
       )
       .handle("deleteTask", ({ params }) =>
@@ -68,13 +67,13 @@ const projectsGroupLive = HttpApiBuilder.group(
       .handle("createProject", ({ payload }) =>
         Effect.gen(function* () {
           const projectService = yield* ProjectService
-          return yield* projectService.create(payload as CreateProjectPayload)
+          return yield* projectService.create(payload)
         })
       )
       .handle("updateProject", ({ params, payload }) =>
         Effect.gen(function* () {
           const projectService = yield* ProjectService
-          return yield* projectService.update(params.id, payload as UpdateProjectPayload)
+          return yield* projectService.update(params.id, payload)
         })
       )
       .handle("deleteProject", ({ params }) =>
@@ -106,13 +105,13 @@ const viewsGroupLive = HttpApiBuilder.group(
       .handle("createView", ({ payload }) =>
         Effect.gen(function* () {
           const viewService = yield* ViewService
-          return yield* viewService.create(payload as CreateViewPayload)
+          return yield* viewService.create(payload)
         })
       )
       .handle("updateView", ({ params, payload }) =>
         Effect.gen(function* () {
           const viewService = yield* ViewService
-          return yield* viewService.update(params.id, payload as UpdateViewPayload)
+          return yield* viewService.update(params.id, payload)
         })
       )
       .handle("deleteView", ({ params }) =>

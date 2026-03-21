@@ -51,13 +51,13 @@ export class ProjectService extends ServiceMap.Service<
             description: Option.getOrNull(payload.description) as string | null,
           })
         )
-        return new Project({
+        return {
           id: ProjectId.makeUnsafe(id),
           name: payload.name,
           description: payload.description,
           createdAt: new Date(now),
           updatedAt: new Date(now),
-        })
+        } satisfies Project
       })
 
       const update = Effect.fn("ProjectService.update")(
@@ -73,13 +73,13 @@ export class ProjectService extends ServiceMap.Service<
             db.update(projects).set(setValues).where(eq(projects.id, id as string))
           )
 
-          return new Project({
+          return {
             id: existing.id,
             name: "name" in payload ? (payload.name as string) : existing.name,
             description: "description" in payload ? payload.description as Option.Option<string> : existing.description,
             createdAt: existing.createdAt,
             updatedAt: new Date(now),
-          })
+          } satisfies Project
         }
       )
 
@@ -97,11 +97,11 @@ export class ProjectService extends ServiceMap.Service<
 }
 
 function toProject(row: typeof projects.$inferSelect): Project {
-  return new Project({
+  return {
     id: ProjectId.makeUnsafe(row.id),
     name: row.name,
     description: row.description ? Option.some(row.description) : Option.none(),
     createdAt: new Date(row.createdAt),
     updatedAt: new Date(row.updatedAt),
-  })
+  } satisfies Project
 }
