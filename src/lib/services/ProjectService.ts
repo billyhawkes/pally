@@ -5,7 +5,7 @@ import {
   ProjectId,
   ProjectNotFoundError,
   UpdateProjectPayload,
-} from "../schemas"
+} from "@/lib/schemas"
 
 // Seed data
 const seedProjects: Project[] = [

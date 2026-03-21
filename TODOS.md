@@ -21,19 +21,20 @@ Goal: Build the backend service layer with Effect, expose as HTTP API and CLI.
 ## Phase 2.5: Connect Effect To Tanstck
 Goal: Connect the effect server to the tanstack start server
 
-- [ ] Expose the effect server through a tanstack start api route
+- [x] Expose the effect server through a tanstack start api route
+- [x] Implement Scalar API docs at /api/docs
 
 ## Phase 3: Database
 Goal: Connect real persistence via Postgres, Drizzle, and Effect SQL.
 
 - [ ] Add docker-compose.yml with Postgres
 - [ ] Configure environment variables (.env, .env.example)
-- [ ] Define Drizzle schema (tasks, projects, views, users)
+- [ ] Define Drizzle schema (tasks, projects, views)
 - [ ] Run initial migration
 - [ ] Wire Drizzle into Effect services via @effect/sql-pg
 
 ## Phase 4: Auth
-Goal: Set up authentication with Better Auth integrated via Effect.
+Goal: Set up authentication with Better Auth integrated via Effect and drizzle.
 
 - [ ] AuthService — Better Auth integration via Effect
 - [ ] Enable login/logout flows

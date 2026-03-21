@@ -6,8 +6,8 @@ import {
   TaskId,
   TaskNotFoundError,
   UpdateTaskPayload,
-} from "../schemas"
-import type { TaskPriority, TaskStatus } from "../schemas"
+} from "@/lib/schemas"
+import type { TaskPriority, TaskStatus } from "@/lib/schemas"
 
 // Seed data
 const seedTasks: Task[] = [
