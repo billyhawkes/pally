@@ -1,4 +1,5 @@
 import { Clock, Effect, Layer, Option, ServiceMap } from "effect"
+import { eq } from "drizzle-orm"
 import {
   CreateProjectPayload,
   Project,
@@ -6,24 +7,9 @@ import {
   ProjectNotFoundError,
   UpdateProjectPayload,
 } from "@/lib/schemas"
-
-// Seed data
-const seedProjects: Project[] = [
-  new Project({
-    id: ProjectId.makeUnsafe("project-1"),
-    name: "Pally",
-    description: Option.some("A web-first project and task application with Github sync"),
-    createdAt: new Date("2024-01-01"),
-    updatedAt: new Date("2024-01-01"),
-  }),
-  new Project({
-    id: ProjectId.makeUnsafe("project-2"),
-    name: "Website",
-    description: Option.some("Company website redesign"),
-    createdAt: new Date("2024-01-05"),
-    updatedAt: new Date("2024-01-05"),
-  }),
-]
+import { DB } from "@/db/layer"
+import { dbQuery } from "@/db/query"
+import { projects } from "@/db/schema"
 
 export class ProjectService extends ServiceMap.Service<
   ProjectService,
@@ -38,64 +24,84 @@ export class ProjectService extends ServiceMap.Service<
   static readonly layer = Layer.effect(
     ProjectService,
     Effect.gen(function* () {
-      let projects = [...seedProjects]
+      const db = yield* DB
 
       const list = Effect.fn("ProjectService.list")(function* () {
-        return projects
+        const rows = yield* dbQuery(db.select().from(projects))
+        return rows.map(toProject)
       })
 
       const findById = Effect.fn("ProjectService.findById")(function* (id: ProjectId) {
-        const project = projects.find((p) => p.id === id)
-        if (!project) {
+        const rows = yield* dbQuery(
+          db.select().from(projects).where(eq(projects.id, id as string)).limit(1)
+        )
+        if (rows.length === 0) {
           return yield* Effect.fail(new ProjectNotFoundError({ id }))
         }
-        return project
+        return toProject(rows[0]!)
       })
 
       const create = Effect.fn("ProjectService.create")(function* (payload: CreateProjectPayload) {
         const now = yield* Clock.currentTimeMillis
-        const project = new Project({
-          id: ProjectId.makeUnsafe(`project-${now}-${Math.random().toString(36).slice(2, 7)}`),
+        const id = `project-${now}-${Math.random().toString(36).slice(2, 7)}`
+        yield* dbQuery(
+          db.insert(projects).values({
+            id,
+            name: payload.name,
+            description: Option.getOrNull(payload.description) as string | null,
+          })
+        )
+        return new Project({
+          id: ProjectId.makeUnsafe(id),
           name: payload.name,
           description: payload.description,
           createdAt: new Date(now),
           updatedAt: new Date(now),
         })
-        projects = [...projects, project]
-        return project
       })
 
       const update = Effect.fn("ProjectService.update")(
         function* (id: ProjectId, payload: UpdateProjectPayload) {
-          const index = projects.findIndex((p) => p.id === id)
-          if (index === -1) {
-            return yield* Effect.fail(new ProjectNotFoundError({ id }))
-          }
+          const existing = yield* findById(id)
           const now = yield* Clock.currentTimeMillis
-          const existing = projects[index]!
-          const updated = new Project({
+
+          const setValues: Record<string, unknown> = { updatedAt: new Date(now) }
+          if ("name" in payload) setValues.name = payload.name
+          if ("description" in payload) setValues.description = Option.getOrNull(payload.description as Option.Option<string>)
+
+          yield* dbQuery(
+            db.update(projects).set(setValues).where(eq(projects.id, id as string))
+          )
+
+          return new Project({
             id: existing.id,
             name: "name" in payload ? (payload.name as string) : existing.name,
             description: "description" in payload ? payload.description as Option.Option<string> : existing.description,
             createdAt: existing.createdAt,
             updatedAt: new Date(now),
           })
-          projects = projects.map((p, i) => (i === index ? updated : p))
-          return updated
         }
       )
 
       const remove = Effect.fn("ProjectService.remove")(function* (id: ProjectId) {
-        const index = projects.findIndex((p) => p.id === id)
-        if (index === -1) {
-          return yield* Effect.fail(new ProjectNotFoundError({ id }))
-        }
-        const project = projects[index]!
-        projects = projects.filter((p) => p.id !== id)
-        return project
+        const existing = yield* findById(id)
+        yield* dbQuery(
+          db.delete(projects).where(eq(projects.id, id as string))
+        )
+        return existing
       })
 
       return { list, findById, create, update, remove }
     })
   )
+}
+
+function toProject(row: typeof projects.$inferSelect): Project {
+  return new Project({
+    id: ProjectId.makeUnsafe(row.id),
+    name: row.name,
+    description: row.description ? Option.some(row.description) : Option.none(),
+    createdAt: new Date(row.createdAt),
+    updatedAt: new Date(row.updatedAt),
+  })
 }

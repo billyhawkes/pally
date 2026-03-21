@@ -27,11 +27,14 @@ Goal: Connect the effect server to the tanstack start server
 ## Phase 3: Database
 Goal: Connect real persistence via Postgres, Drizzle, and Effect SQL.
 
-- [ ] Add docker-compose.yml with Postgres
-- [ ] Configure environment variables (.env, .env.example)
-- [ ] Define Drizzle schema (tasks, projects, views)
-- [ ] Run initial migration
-- [ ] Wire Drizzle into Effect services via @effect/sql-pg
+- [x] Add docker-compose.yml with Postgres
+- [x] Configure environment variables (.env, .env.example)
+- [x] Define Drizzle schema (tasks, projects, views)
+- [x] Run initial migration
+- [x] Wire Drizzle into Effect services via @effect/sql-pg
+
+## Phase 3.5: Fixes
+- [ ] Fix types using as Type
 
 ## Phase 4: Auth
 Goal: Set up authentication with Better Auth integrated via Effect and drizzle.

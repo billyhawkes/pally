@@ -4,6 +4,9 @@
 
 Pally is a web-first project and task application with strong Github two-way sync.
 
+## Rules
+- Never change the version of dependencies without asking
+
 ## Tech Stack
 
 - Tanstack (Start, DB, Table, Form)

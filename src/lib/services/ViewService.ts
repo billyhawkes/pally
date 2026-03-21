@@ -1,4 +1,5 @@
 import { Clock, Effect, Layer, Option, ServiceMap } from "effect"
+import { eq } from "drizzle-orm"
 import {
   CreateViewPayload,
   ProjectId,
@@ -8,43 +9,9 @@ import {
   ViewNotFoundError,
 } from "@/lib/schemas"
 import type { TaskPriority, TaskStatus } from "@/lib/schemas"
-
-// Seed data
-const seedViews: View[] = [
-  new View({
-    id: ViewId.makeUnsafe("view-1"),
-    name: "All Tasks",
-    filters: {
-      status: Option.none(),
-      priority: Option.none(),
-      projectId: Option.none(),
-    },
-    createdAt: new Date("2024-01-01"),
-    updatedAt: new Date("2024-01-01"),
-  }),
-  new View({
-    id: ViewId.makeUnsafe("view-2"),
-    name: "High Priority",
-    filters: {
-      status: Option.none(),
-      priority: Option.some(["urgent", "high"] as const),
-      projectId: Option.none(),
-    },
-    createdAt: new Date("2024-01-02"),
-    updatedAt: new Date("2024-01-02"),
-  }),
-  new View({
-    id: ViewId.makeUnsafe("view-3"),
-    name: "In Progress",
-    filters: {
-      status: Option.some(["in_progress"] as const),
-      priority: Option.none(),
-      projectId: Option.none(),
-    },
-    createdAt: new Date("2024-01-03"),
-    updatedAt: new Date("2024-01-03"),
-  }),
-]
+import { DB } from "@/db/layer"
+import { dbQuery } from "@/db/query"
+import { views } from "@/db/schema"
 
 export class ViewService extends ServiceMap.Service<
   ViewService,
@@ -59,69 +26,110 @@ export class ViewService extends ServiceMap.Service<
   static readonly layer = Layer.effect(
     ViewService,
     Effect.gen(function* () {
-      let views = [...seedViews]
+      const db = yield* DB
 
       const list = Effect.fn("ViewService.list")(function* () {
-        return views
+        const rows = yield* dbQuery(db.select().from(views))
+        return rows.map(toView)
       })
 
       const findById = Effect.fn("ViewService.findById")(function* (id: ViewId) {
-        const view = views.find((v) => v.id === id)
-        if (!view) {
+        const rows = yield* dbQuery(
+          db.select().from(views).where(eq(views.id, id as string)).limit(1)
+        )
+        if (rows.length === 0) {
           return yield* Effect.fail(new ViewNotFoundError({ id }))
         }
-        return view
+        return toView(rows[0]!)
       })
 
       const create = Effect.fn("ViewService.create")(function* (payload: CreateViewPayload) {
         const now = yield* Clock.currentTimeMillis
-        const view = new View({
-          id: ViewId.makeUnsafe(`view-${now}-${Math.random().toString(36).slice(2, 7)}`),
+        const id = `view-${now}-${Math.random().toString(36).slice(2, 7)}`
+        const filtersJson = {
+          status: Option.getOrNull(payload.filters.status) as string[] | null,
+          priority: Option.getOrNull(payload.filters.priority) as string[] | null,
+          projectId: Option.getOrNull(payload.filters.projectId) as string | null,
+        }
+        yield* dbQuery(
+          db.insert(views).values({
+            id,
+            name: payload.name,
+            filters: filtersJson,
+          })
+        )
+        return new View({
+          id: ViewId.makeUnsafe(id),
           name: payload.name,
           filters: payload.filters,
           createdAt: new Date(now),
           updatedAt: new Date(now),
         })
-        views = [...views, view]
-        return view
       })
 
       const update = Effect.fn("ViewService.update")(
         function* (id: ViewId, payload: UpdateViewPayload) {
-          const index = views.findIndex((v) => v.id === id)
-          if (index === -1) {
-            return yield* Effect.fail(new ViewNotFoundError({ id }))
-          }
+          const existing = yield* findById(id)
           const now = yield* Clock.currentTimeMillis
-          const existing = views[index]!
+
+          const setValues: Record<string, unknown> = { updatedAt: new Date(now) }
+          if ("name" in payload) setValues.name = payload.name as string
+          if ("filters" in payload) {
+            const f = payload.filters as View["filters"]
+            setValues.filters = {
+              status: Option.getOrNull(f.status) as string[] | null,
+              priority: Option.getOrNull(f.priority) as string[] | null,
+              projectId: Option.getOrNull(f.projectId) as string | null,
+            }
+          }
+
+          yield* dbQuery(
+            db.update(views).set(setValues).where(eq(views.id, id as string))
+          )
+
           type Filters = {
             status: Option.Option<readonly TaskStatus[]>
             priority: Option.Option<readonly TaskPriority[]>
             projectId: Option.Option<ProjectId>
           }
-          const updated = new View({
+          return new View({
             id: existing.id,
             name: "name" in payload ? (payload.name as string) : existing.name,
             filters: "filters" in payload ? (payload.filters as Filters) : existing.filters,
             createdAt: existing.createdAt,
             updatedAt: new Date(now),
           })
-          views = views.map((v, i) => (i === index ? updated : v))
-          return updated
         }
       )
 
       const remove = Effect.fn("ViewService.remove")(function* (id: ViewId) {
-        const index = views.findIndex((v) => v.id === id)
-        if (index === -1) {
-          return yield* Effect.fail(new ViewNotFoundError({ id }))
-        }
-        const view = views[index]!
-        views = views.filter((v) => v.id !== id)
-        return view
+        const existing = yield* findById(id)
+        yield* dbQuery(
+          db.delete(views).where(eq(views.id, id as string))
+        )
+        return existing
       })
 
       return { list, findById, create, update, remove }
     })
   )
+}
+
+function toView(row: typeof views.$inferSelect): View {
+  const filters = row.filters as {
+    status: string[] | null
+    priority: string[] | null
+    projectId: string | null
+  }
+  return new View({
+    id: ViewId.makeUnsafe(row.id),
+    name: row.name,
+    filters: {
+      status: filters.status ? Option.some(filters.status as TaskStatus[]) : Option.none(),
+      priority: filters.priority ? Option.some(filters.priority as TaskPriority[]) : Option.none(),
+      projectId: filters.projectId ? Option.some(ProjectId.makeUnsafe(filters.projectId)) : Option.none(),
+    },
+    createdAt: new Date(row.createdAt),
+    updatedAt: new Date(row.updatedAt),
+  })
 }

@@ -3,6 +3,8 @@ import { BunServices, BunRuntime } from "@effect/platform-bun"
 import { Console, Effect, Layer, Option } from "effect"
 import { TaskService, ProjectService, ViewService } from "./lib/services/index"
 import { TaskId, ProjectId, ViewId, TaskStatus, TaskPriority } from "./lib/schemas"
+import { DBLive } from "./db/layer"
+import { seed } from "./db/seed"
 
 // Task list command with filters
 const taskListStatus = Flag.string("status").pipe(
@@ -237,11 +239,14 @@ const app = Command.make("pally").pipe(
 // Run CLI
 const program = Command.run(app, { version: "0.1.0" })
 
-const mainLayer = Layer.mergeAll(
-  TaskService.layer,
-  ProjectService.layer,
-  ViewService.layer,
-  BunServices.layer
+const servicesWithDB = TaskService.layer.pipe(
+  Layer.provideMerge(ProjectService.layer),
+  Layer.provideMerge(ViewService.layer),
+  Layer.provideMerge(DBLive)
 )
+const mainLayer = Layer.merge(servicesWithDB, BunServices.layer)
 
-program.pipe(Effect.provide(mainLayer), BunRuntime.runMain)
+Effect.gen(function* () {
+  yield* seed
+  yield* program
+}).pipe(Effect.provide(mainLayer), BunRuntime.runMain)

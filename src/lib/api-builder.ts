@@ -3,6 +3,7 @@ import { HttpApiBuilder } from "effect/unstable/httpapi"
 import { PallyApi } from "./api"
 import { TaskService, ProjectService, ViewService } from "./services/index"
 import type { CreateTaskPayload, UpdateTaskPayload, CreateProjectPayload, UpdateProjectPayload, CreateViewPayload, UpdateViewPayload } from "./schemas"
+import { DBLive } from "@/db/layer"
 
 // Tasks group implementation
 const tasksGroupLive = HttpApiBuilder.group(
@@ -131,5 +132,6 @@ export const apiLayer = HttpApiBuilder.layer(PallyApi, {
   Layer.provide(viewsGroupLive),
   Layer.provide(TaskService.layer),
   Layer.provide(ProjectService.layer),
-  Layer.provide(ViewService.layer)
+  Layer.provide(ViewService.layer),
+  Layer.provide(DBLive)
 )
