@@ -1,20 +1,45 @@
 {
   "name": "pally",
   "module": "index.ts",
-  "type": "module",
+  "devDependencies": {
+    "@effect/language-service": "^0.81.0",
+    "@tanstack/start-plugin": "^1.111.2",
+    "@types/better-sqlite3": "^7.6.13",
+    "@types/bun": "latest",
+    "@vitejs/plugin-react": "^6.0.1",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "drizzle-kit": "^0.31.10",
+    "lucide-react": "^0.577.0",
+    "shadcn": "^4.1.0",
+    "tailwind-merge": "^3.5.0",
+    "typescript": "^5.9.3",
+    "vite": "^8.0.1"
+  },
   "private": true,
   "scripts": {
     "prepare": "effect-language-service patch",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "dev": "vite dev --port 3000",
+    "build": "vite build",
+    "preview": "vite preview"
   },
-  "devDependencies": {
-    "@effect/language-service": "^0.81.0",
-    "@types/bun": "latest",
-    "typescript": "^5.9.3"
-  },
+  "type": "module",
   "dependencies": {
-    "@effect/cli": "^0.75.0",
-    "@effect/platform": "^0.96.0",
-    "effect": "^3.21.0"
+    "@effect/sql-pg": "^4.0.0-beta.36",
+    "@libsql/client": "^0.17.2",
+    "@tailwindcss/vite": "^4.2.2",
+    "@tanstack/db": "^0.5.33",
+    "@tanstack/react-form": "^1.28.5",
+    "@tanstack/react-start": "^1.167.2",
+    "@tanstack/react-table": "^8.21.3",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "better-auth": "^1.5.5",
+    "drizzle-orm": "^0.45.1",
+    "effect": "^4.0.0-beta.36",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
+    "tailwindcss": "^4.2.2"
   }
 }

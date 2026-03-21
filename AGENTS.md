@@ -63,3 +63,18 @@ The Effect v4 repository is cloned to `~/.local/share/effect-solutions/effect` f
 Use this to explore APIs, find usage examples, and understand implementation
 details when the documentation isn't enough.
 
+<!-- intent-skills:start -->
+# Skill mappings - when working in these areas, load the linked skill file into context.
+skills:
+  - task: "Creating routes, route loaders, navigation, and search params"
+    load: "node_modules/@tanstack/router-core/skills/router-core/SKILL.md"
+  - task: "Route protection, auth guards, and RBAC with Better Auth"
+    load: "node_modules/@tanstack/router-core/skills/router-core/auth-and-guards/SKILL.md"
+  - task: "TanStack Start project setup, SSR, and execution model"
+    load: "node_modules/@tanstack/start-client-core/skills/start-core/SKILL.md"
+  - task: "Server functions, API endpoints, and server middleware"
+    load: "node_modules/@tanstack/start-client-core/skills/start-core/server-functions/SKILL.md"
+  - task: "Setting up TanStack DB collections, live queries, and optimistic mutations"
+    load: "node_modules/@tanstack/db/skills/db-core/SKILL.md"
+<!-- intent-skills:end -->
+
