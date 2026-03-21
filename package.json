@@ -22,10 +22,12 @@
     "typecheck": "tsc --noEmit",
     "dev": "vite dev --port 3000",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "cli": "bun run src/cli.ts"
   },
   "type": "module",
   "dependencies": {
+    "@effect/platform-bun": "^4.0.0-beta.36",
     "@effect/sql-pg": "^4.0.0-beta.36",
     "@libsql/client": "^0.17.2",
     "@tailwindcss/vite": "^4.2.2",

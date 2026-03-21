@@ -3,20 +3,25 @@
 ## Phase 1: Foundation
 Goal: Install all dependencies, scaffold TanStack Start, and verify the dev server runs.
 
-- [ ] Install missing dependencies (React, TanStack Start/DB/Table/Form, Shadcn, Tailwind, Better Auth, Drizzle, @effect/sql-pg)
-- [ ] Upgrade Effect to v4 (currently v3)
-- [ ] Scaffold TanStack Start app structure (routes, root layout)
-- [ ] Verify dev server runs and renders a page
+- [x] Install missing dependencies (React, TanStack Start/DB/Table/Form, Shadcn, Tailwind, Better Auth, Drizzle, @effect/sql-pg)
+- [x] Upgrade Effect to v4 (currently v3)
+- [x] Scaffold TanStack Start app structure (routes, root layout)
+- [x] Verify dev server runs and renders a page
 
 ## Phase 2: Effect Services + API
 Goal: Build the backend service layer with Effect, expose as HTTP API and CLI.
 
-- [ ] TaskService — CRUD for tasks with seed data
-- [ ] ProjectService — CRUD for projects with seed data
-- [ ] ViewService — CRUD for saved views/filters
-- [ ] Expose services as HTTP API with Effect platform
-- [ ] Add OpenAPI spec generation and Swagger docs
-- [ ] Create Effect CLI commands (e.g. `pally task create`)
+- [x] TaskService — CRUD for tasks with seed data
+- [x] ProjectService — CRUD for projects with seed data
+- [x] ViewService — CRUD for saved views/filters
+- [x] Expose services as HTTP API with Effect platform
+- [x] Add OpenAPI spec generation and Swagger docs
+- [x] Create Effect CLI commands (e.g. `pally task create`)
+
+## Phase 2.5: Connect Effect To Tanstck
+Goal: Connect the effect server to the tanstack start server
+
+- [ ] Expose the effect server through a tanstack start api route
 
 ## Phase 3: Database
 Goal: Connect real persistence via Postgres, Drizzle, and Effect SQL.
