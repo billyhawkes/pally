@@ -42,7 +42,11 @@ const optimisticTask = (payload: CreateTaskPayload): Task => {
 type TasksResult = AsyncResult.AsyncResult<ReadonlyArray<Task>, unknown>;
 
 const currentTasks = (result: TasksResult): Array<Task> =>
-  result._tag === "Success" ? Array.from(result.value) : [];
+  AsyncResult.match(result, {
+    onInitial: () => [],
+    onFailure: () => [],
+    onSuccess: ({ value }) => Array.from(value),
+  });
 
 const updateTaskInList = (
   tasks: ReadonlyArray<Task>,

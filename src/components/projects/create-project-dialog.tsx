@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { Schema } from "effect";
 import { useAtomSet, useAtomValue } from "@effect/atom-react";
+import { AsyncResult } from "effect/unstable/reactivity";
 import { ChevronRight } from "lucide-react";
 import {
   CreateProjectPayload,
@@ -86,23 +87,31 @@ export function ProjectDialog({ trigger, ...props }: ProjectDialogProps) {
   const teamId = isEditing
     ? editingProject.teamId
     : ("teamId" in props ? (props.teamId ?? null) : null);
-  const githubIntegration =
-    githubIntegrationResult._tag === "Success" ? githubIntegrationResult.value : null;
+  const githubIntegration = AsyncResult.match(githubIntegrationResult, {
+    onInitial: () => null,
+    onFailure: () => null,
+    onSuccess: ({ value }) => value,
+  });
   const isGithubAppConfigured = githubIntegration?.appConfigured ?? false;
-  const organizations =
-    organizationsResult._tag === "Success" ? organizationsResult.value : [];
+  const organizations = AsyncResult.match(organizationsResult, {
+    onInitial: () => [],
+    onFailure: () => [],
+    onSuccess: ({ value }) => value,
+  });
   const teamsResult = useAtomValue(teamsAtom(orgId));
-  const teamOptions =
-    teamsResult._tag === "Success"
-      ? teamsResult.value.map((team) => ({ id: team.id, name: team.name }))
-      : [];
+  const teams = AsyncResult.match(teamsResult, {
+    onInitial: () => [],
+    onFailure: () => [],
+    onSuccess: ({ value }) => value,
+  });
+  const teamOptions = teams.map((team) => ({ id: team.id, name: team.name }));
   const organizationName =
     orgId
       ? (organizations.find((organization) => organization.id === orgId)?.name ?? null)
       : null;
   const teamName =
-    selectedTeamId && teamsResult._tag === "Success"
-      ? (teamsResult.value.find((team) => team.id === selectedTeamId)?.name ?? null)
+    selectedTeamId
+      ? (teams.find((team) => team.id === selectedTeamId)?.name ?? null)
       : null;
 
   const breadcrumbs = useMemo(

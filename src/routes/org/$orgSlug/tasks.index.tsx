@@ -1,5 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useAtomValue } from "@effect/atom-react";
+import { AsyncResult } from "effect/unstable/reactivity";
 import { organizationsAtom } from "@/lib/atoms/organizations";
 import { useTasksAtom } from "@/lib/atoms/tasks";
 import type { TaskFilters } from "@/lib/schemas";
@@ -29,20 +30,32 @@ function TasksPage() {
   const navigate = useNavigate({ from: Route.fullPath });
   const tasks = useTasksAtom();
   const organizations = useAtomValue(organizationsAtom);
-  const organization =
-    organizations._tag === "Success"
-      ? (organizations.value.find((org) => org.slug === orgSlug) ?? null)
-      : null;
+  const organizationEntries = AsyncResult.match(organizations, {
+    onInitial: () => [],
+    onFailure: () => [],
+    onSuccess: ({ value }) => value,
+  });
+  const organization = organizationEntries.find((org) => org.slug === orgSlug) ?? null;
   const filters = taskFiltersFromSearch(search);
-  const orgId =
-    organization?.id ?? null;
-  const filteredTasks =
-    tasks._tag === "Success"
-      ? applyTaskFilters(
-          tasks.value.filter((task) => task.orgId === orgId),
+  const orgId = organization?.id ?? null;
+  const tasksContent = AsyncResult.match(tasks, {
+    onInitial: () => <p className="text-muted-foreground">Loading...</p>,
+    onFailure: () => <p className="text-destructive">Failed to load tasks</p>,
+    onSuccess: ({ value }) => (
+      <TaskViews
+        tasks={applyTaskFilters(
+          value.filter((task) => task.orgId === orgId),
           filters,
-        )
-      : null;
+        )}
+        view={search.tab}
+        filters={filters}
+        onViewChange={(tab: TaskViewMode) => updateSearchFilters({ tab })}
+        onFiltersChange={(nextFilters) =>
+          updateSearchFilters({ filters: nextFilters })
+        }
+      />
+    ),
+  });
 
   const updateSearchFilters = (next: {
     tab?: TaskViewMode;
@@ -68,22 +81,7 @@ function TasksPage() {
       </div>
 
       <div className="space-y-2">
-        {tasks._tag === "Initial" && (
-          <p className="text-muted-foreground">Loading...</p>
-        )}
-        {tasks._tag === "Failure" && (
-          <p className="text-destructive">Failed to load tasks</p>
-        )}
-        {tasks._tag === "Success" &&
-          <TaskViews
-            tasks={filteredTasks ?? []}
-            view={search.tab}
-            filters={filters}
-            onViewChange={(tab: TaskViewMode) => updateSearchFilters({ tab })}
-            onFiltersChange={(nextFilters) =>
-              updateSearchFilters({ filters: nextFilters })
-            }
-          />}
+        {tasksContent}
       </div>
     </div>
   );

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useRouter, useParams } from "@tanstack/react-router";
 import { useAtomValue } from "@effect/atom-react";
+import { AsyncResult } from "effect/unstable/reactivity";
 import {
   ClipboardList,
   LogOut,
@@ -105,7 +106,11 @@ export function AppSidebar({
     : "table";
 
   const orgsResult = useAtomValue(organizationsAtom);
-  const organizations = orgsResult._tag === "Success" ? orgsResult.value : [];
+  const organizations = AsyncResult.match(orgsResult, {
+    onInitial: () => [],
+    onFailure: () => [],
+    onSuccess: ({ value }) => value,
+  });
   const githubIntegrationResult = useAtomValue(githubIntegrationAtom);
 
   const activeOrg = currentOrgSlug
@@ -113,7 +118,11 @@ export function AppSidebar({
     : null;
 
   const teamsResult = useAtomValue(teamsAtom(activeOrg?.id));
-  const teams = teamsResult._tag === "Success" ? teamsResult.value : [];
+  const teams = AsyncResult.match(teamsResult, {
+    onInitial: () => [],
+    onFailure: () => [],
+    onSuccess: ({ value }) => value,
+  });
 
   const [showCreateTeam, setShowCreateTeam] = useState(false);
   const [isGithubSubmitting, setIsGithubSubmitting] = useState(false);
@@ -121,12 +130,15 @@ export function AppSidebar({
     boolean | null
   >(null);
 
-  const githubIntegration =
-    githubIntegrationResult._tag === "Success"
-      ? githubIntegrationResult.value
-      : null;
-  const isGithubLoading =
-    githubConnectedOverride === null && githubIntegrationResult._tag !== "Success";
+  const { githubIntegration, isGithubLoading } = AsyncResult.match(
+    githubIntegrationResult,
+    {
+      onInitial: () => ({ githubIntegration: null, isGithubLoading: true }),
+      onFailure: () => ({ githubIntegration: null, isGithubLoading: true }),
+      onSuccess: ({ value }) => ({ githubIntegration: value, isGithubLoading: false }),
+    },
+  );
+  const isGithubLoadingState = githubConnectedOverride === null && isGithubLoading;
   const isGithubConfigured = githubIntegration?.providerConfigured ?? false;
   const isGithubConnected =
     githubConnectedOverride ?? githubIntegration?.connected ?? false;
@@ -389,7 +401,7 @@ export function AppSidebar({
               >
                 <DropdownMenuItem disabled>
                   <Github className="mr-2 size-4" />
-                  {isGithubLoading
+                  {isGithubLoadingState
                     ? "Checking GitHub account"
                     : !isGithubConfigured
                       ? "GitHub not configured"
@@ -398,7 +410,7 @@ export function AppSidebar({
                       : "GitHub account not connected"}
                 </DropdownMenuItem>
                 <DropdownMenuItem
-                  disabled={isGithubLoading || isGithubSubmitting || !isGithubConfigured}
+                  disabled={isGithubLoadingState || isGithubSubmitting || !isGithubConfigured}
                   onClick={handleGithubConnectionToggle}
                 >
                   {isGithubSubmitting ? (

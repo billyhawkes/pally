@@ -1,5 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useAtomValue } from "@effect/atom-react";
+import { AsyncResult } from "effect/unstable/reactivity";
 import { organizationsAtom } from "@/lib/atoms/organizations";
 import { useProjectsAtom } from "@/lib/atoms/projects";
 import { teamsAtom } from "@/lib/atoms/teams";
@@ -15,24 +16,62 @@ function ProjectsPage() {
   const navigate = useNavigate({ from: Route.fullPath });
   const projects = useProjectsAtom();
   const organizations = useAtomValue(organizationsAtom);
-  const organization =
-    organizations._tag === "Success"
-      ? (organizations.value.find((org) => org.slug === orgSlug) ?? null)
-      : null;
+  const organizationEntries = AsyncResult.match(organizations, {
+    onInitial: () => [],
+    onFailure: () => [],
+    onSuccess: ({ value }) => value,
+  });
+  const organization = organizationEntries.find((org) => org.slug === orgSlug) ?? null;
   const orgId = organization?.id ?? null;
   const teams = useAtomValue(teamsAtom(orgId));
-  const teamOptions =
-    teams._tag === "Success"
-      ? teams.value.map((team) => ({ id: team.id, name: team.name }))
-      : [];
-  const teamNamesById =
-    teams._tag === "Success"
-      ? Object.fromEntries(teams.value.map((team) => [team.id, team.name]))
-      : {};
-  const filteredProjects =
-    projects._tag === "Success"
-      ? projects.value.filter((project) => project.orgId === orgId)
-      : null;
+  const teamEntries = AsyncResult.match(teams, {
+    onInitial: () => [],
+    onFailure: () => [],
+    onSuccess: ({ value }) => value,
+  });
+  const teamOptions = teamEntries.map((team) => ({ id: team.id, name: team.name }));
+  const teamNamesById = Object.fromEntries(teamEntries.map((team) => [team.id, team.name]));
+  const projectsContent = AsyncResult.match(projects, {
+    onInitial: () => <p className="text-muted-foreground">Loading...</p>,
+    onFailure: () => <p className="text-destructive">Failed to load projects</p>,
+    onSuccess: ({ value }) => (
+      <ProjectTableView
+        projects={value.filter((project) => project.orgId === orgId)}
+        teamNamesById={teamNamesById}
+        teamOptions={teamOptions}
+        onOpenProject={(project) => {
+          if (project.teamId) {
+            navigate({
+              to: "/org/$orgSlug/team/$teamSlug/projects/$projectId/tasks",
+              params: {
+                orgSlug,
+                teamSlug: project.teamId,
+                projectId: project.id,
+              },
+              search: {
+                tab: "table",
+                status: [],
+                priority: [],
+                projectId: project.id,
+              },
+            });
+            return;
+          }
+
+          navigate({
+            to: "/org/$orgSlug/projects/$projectId/tasks",
+            params: { orgSlug, projectId: project.id },
+            search: {
+              tab: "table",
+              status: [],
+              priority: [],
+              projectId: project.id,
+            },
+          });
+        }}
+      />
+    ),
+  });
 
   return (
     <div className="space-y-6 p-6">
@@ -50,49 +89,7 @@ function ProjectsPage() {
       </div>
 
       <div className="space-y-2">
-        {projects._tag === "Initial" && (
-          <p className="text-muted-foreground">Loading...</p>
-        )}
-        {projects._tag === "Failure" && (
-          <p className="text-destructive">Failed to load projects</p>
-        )}
-        {projects._tag === "Success" && (
-          <ProjectTableView
-            projects={filteredProjects ?? []}
-            teamNamesById={teamNamesById}
-            teamOptions={teamOptions}
-            onOpenProject={(project) => {
-              if (project.teamId) {
-                navigate({
-                  to: "/org/$orgSlug/team/$teamSlug/projects/$projectId/tasks",
-                  params: {
-                    orgSlug,
-                    teamSlug: project.teamId,
-                    projectId: project.id,
-                  },
-                  search: {
-                    tab: "table",
-                    status: [],
-                    priority: [],
-                    projectId: project.id,
-                  },
-                });
-                return;
-              }
-
-              navigate({
-                to: "/org/$orgSlug/projects/$projectId/tasks",
-                params: { orgSlug, projectId: project.id },
-                search: {
-                  tab: "table",
-                  status: [],
-                  priority: [],
-                  projectId: project.id,
-                },
-              });
-            }}
-          />
-        )}
+        {projectsContent}
       </div>
     </div>
   );

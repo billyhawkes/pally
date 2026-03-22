@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useAtomSet } from "@effect/atom-react";
 import {
   flexRender,
@@ -56,6 +56,7 @@ export function ProjectTableView({
   ]);
   const [editingProject, setEditingProject] = useState<Project | null>(null);
   const [contextMenu, setContextMenu] = useState<ProjectContextMenuState | null>(null);
+  const suppressOpenProjectRef = useRef(false);
 
   const removeProject = (project: Project) => {
     remove({
@@ -228,11 +229,17 @@ export function ProjectTableView({
             <TableRow
               key={row.id}
               className={onOpenProject ? "cursor-pointer" : undefined}
-              onClick={() => {
+              onClick={(event) => {
+                if (event.ctrlKey || suppressOpenProjectRef.current) {
+                  suppressOpenProjectRef.current = false;
+                  return;
+                }
+
                 onOpenProject?.(row.original);
               }}
               onContextMenu={(event) => {
                 event.preventDefault();
+                suppressOpenProjectRef.current = true;
                 setContextMenu({
                   project: row.original,
                   x: event.clientX,

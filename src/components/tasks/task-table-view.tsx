@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react"
 import { useAtomSet } from "@effect/atom-react"
+import { AsyncResult } from "effect/unstable/reactivity"
 import { Link, useRouter } from "@tanstack/react-router"
 import {
   flexRender,
@@ -68,9 +69,11 @@ export function TaskTableView({
   const [editingTask, setEditingTask] = useState<Task | null>(null)
   const projectNames = useMemo(
     () =>
-      projects._tag === "Success"
-        ? new Map(projects.value.map((project) => [project.id, project.name]))
-        : new Map(),
+      AsyncResult.match(projects, {
+        onInitial: () => new Map(),
+        onFailure: () => new Map(),
+        onSuccess: ({ value }) => new Map(value.map((project) => [project.id, project.name])),
+      }),
     [projects],
   )
 

@@ -38,7 +38,11 @@ const optimisticProject = (payload: CreateProjectPayload): Project => {
 type ProjectsResult = AsyncResult.AsyncResult<ReadonlyArray<Project>, unknown>;
 
 const currentProjects = (result: ProjectsResult): Array<Project> =>
-  result._tag === "Success" ? Array.from(result.value) : [];
+  AsyncResult.match(result, {
+    onInitial: () => [],
+    onFailure: () => [],
+    onSuccess: ({ value }) => Array.from(value),
+  });
 
 const updateProjectInList = (
   projects: ReadonlyArray<Project>,

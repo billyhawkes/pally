@@ -1,5 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useAtomValue } from "@effect/atom-react";
+import { AsyncResult } from "effect/unstable/reactivity";
 import { organizationsAtom } from "@/lib/atoms/organizations";
 import { useProjectsAtom } from "@/lib/atoms/projects";
 import { teamsAtom } from "@/lib/atoms/teams";
@@ -16,31 +17,46 @@ function TeamProjectsPage() {
   const navigate = useNavigate({ from: Route.fullPath });
   const organizations = useAtomValue(organizationsAtom);
   const projects = useProjectsAtom();
-  const organization =
-    organizations._tag === "Success"
-      ? (organizations.value.find((org) => org.slug === orgSlug) ?? null)
-      : null;
+  const organizationEntries = AsyncResult.match(organizations, {
+    onInitial: () => [],
+    onFailure: () => [],
+    onSuccess: ({ value }) => value,
+  });
+  const organization = organizationEntries.find((org) => org.slug === orgSlug) ?? null;
   const orgId = organization?.id ?? null;
   const teams = useAtomValue(teamsAtom(orgId));
   const teamId = teamSlug as TeamId;
-  const teamName =
-    teams._tag === "Success"
-      ? (teams.value.find((team) => team.id === teamId)?.name ?? teamSlug)
-      : teamSlug;
-  const teamNamesById =
-    teams._tag === "Success"
-      ? Object.fromEntries(teams.value.map((team) => [team.id, team.name]))
-      : {};
-  const teamOptions =
-    teams._tag === "Success"
-      ? teams.value.map((team) => ({ id: team.id, name: team.name }))
-      : [];
-  const filteredProjects =
-    projects._tag === "Success"
-      ? projects.value.filter(
-          (project) => project.orgId === orgId && project.teamId === teamId,
-        )
-      : null;
+  const teamEntries = AsyncResult.match(teams, {
+    onInitial: () => [],
+    onFailure: () => [],
+    onSuccess: ({ value }) => value,
+  });
+  const teamName = teamEntries.find((team) => team.id === teamId)?.name ?? teamSlug;
+  const teamNamesById = Object.fromEntries(teamEntries.map((team) => [team.id, team.name]));
+  const teamOptions = teamEntries.map((team) => ({ id: team.id, name: team.name }));
+  const projectsContent = AsyncResult.match(projects, {
+    onInitial: () => <p className="text-muted-foreground">Loading...</p>,
+    onFailure: () => <p className="text-destructive">Failed to load projects</p>,
+    onSuccess: ({ value }) => (
+      <ProjectTableView
+        projects={value.filter((project) => project.orgId === orgId && project.teamId === teamId)}
+        teamNamesById={teamNamesById}
+        teamOptions={teamOptions}
+        onOpenProject={(project) =>
+          navigate({
+            to: "/org/$orgSlug/team/$teamSlug/projects/$projectId/tasks",
+            params: { orgSlug, teamSlug, projectId: project.id },
+            search: {
+              tab: "table",
+              status: [],
+              priority: [],
+              projectId: project.id,
+            },
+          })
+        }
+      />
+    ),
+  });
 
   return (
     <div className="space-y-6 p-6">
@@ -59,31 +75,7 @@ function TeamProjectsPage() {
       </div>
 
       <div className="space-y-2">
-        {projects._tag === "Initial" && (
-          <p className="text-muted-foreground">Loading...</p>
-        )}
-        {projects._tag === "Failure" && (
-          <p className="text-destructive">Failed to load projects</p>
-        )}
-        {projects._tag === "Success" && (
-          <ProjectTableView
-            projects={filteredProjects ?? []}
-            teamNamesById={teamNamesById}
-            teamOptions={teamOptions}
-            onOpenProject={(project) =>
-              navigate({
-                to: "/org/$orgSlug/team/$teamSlug/projects/$projectId/tasks",
-                params: { orgSlug, teamSlug, projectId: project.id },
-                search: {
-                  tab: "table",
-                  status: [],
-                  priority: [],
-                  projectId: project.id,
-                },
-              })
-            }
-          />
-        )}
+        {projectsContent}
       </div>
     </div>
   );

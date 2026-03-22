@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useAtomValue } from "@effect/atom-react";
+import { AsyncResult } from "effect/unstable/reactivity";
 import { formatForDisplay, useHotkey } from "@tanstack/react-hotkeys";
 import { useRouter } from "@tanstack/react-router";
 import {
@@ -60,8 +61,11 @@ export function CommandPalette() {
     ReadonlyArray<string>
   >([]);
 
-  const organizations =
-    organizationsResult._tag === "Success" ? organizationsResult.value : [];
+  const organizations = AsyncResult.match(organizationsResult, {
+    onInitial: () => [],
+    onFailure: () => [],
+    onSuccess: ({ value }) => value,
+  });
   const pathSegments = router.state.location.pathname.split("/").filter(Boolean);
   const orgSlug = pathSegments[0] === "org" ? (pathSegments[1] ?? "") : "";
   const teamSlug = pathSegments[2] === "team" ? (pathSegments[3] ?? null) : null;
@@ -76,10 +80,17 @@ export function CommandPalette() {
   const activeOrg =
     organizations.find((organization) => organization.slug === orgSlug) ?? null;
   const teamsResult = useAtomValue(teamsAtom(activeOrg?.id ?? null));
-  const teams = teamsResult._tag === "Success" ? teamsResult.value : [];
+  const teams = AsyncResult.match(teamsResult, {
+    onInitial: () => [],
+    onFailure: () => [],
+    onSuccess: ({ value }) => value,
+  });
   const currentTeam = teams.find((team) => team.id === teamSlug) ?? null;
-  const projects =
-    projectsResult._tag === "Success" ? projectsResult.value : [];
+  const projects = AsyncResult.match(projectsResult, {
+    onInitial: () => [],
+    onFailure: () => [],
+    onSuccess: ({ value }) => value,
+  });
   const currentProject =
     projects.find((project) => project.id === projectIdParam) ?? null;
   const openShortcut = formatForDisplay("Mod+K");

@@ -1,4 +1,4 @@
-import { Effect, Layer, Schema, Schedule, ServiceMap, flow } from "effect"
+import { Effect, Layer, Result, Schema, Schedule, ServiceMap, flow } from "effect"
 import { and, eq } from "drizzle-orm"
 import {
   FetchHttpClient,
@@ -151,7 +151,10 @@ export class GithubService extends ServiceMap.Service<
       const failGithubResponse = Effect.fn("GithubService.failGithubResponse")(
         function* (operation: string, response: HttpClientResponse.HttpClientResponse) {
           const bodyResult = yield* response.text.pipe(Effect.result)
-          const body = bodyResult._tag === "Success" ? bodyResult.success : ""
+          const body = Result.match(bodyResult, {
+            onFailure: () => "",
+            onSuccess: (success) => success,
+          })
           return yield* new GithubSyncError({
             message: `${operation} failed with ${response.status}${body ? `: ${body}` : ""}`,
           })
@@ -612,12 +615,10 @@ export class GithubService extends ServiceMap.Service<
 
       const syncTask = Effect.fn("GithubService.syncTask")(function* (task: Task) {
         const result = yield* syncTaskOrFail(task).pipe(Effect.result)
-
-        if (result._tag === "Failure") {
-          return task
-        }
-
-        return result.success
+        return Result.match(result, {
+          onFailure: () => task,
+          onSuccess: (success) => success,
+        })
       })
 
       const closeTaskIssue = Effect.fn("GithubService.closeTaskIssue")(function* (task: Task) {

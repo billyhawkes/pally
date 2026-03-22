@@ -1,5 +1,6 @@
 import { useAtomValue } from "@effect/atom-react";
 import { useRouter } from "@tanstack/react-router";
+import { AsyncResult } from "effect/unstable/reactivity";
 import { ChevronRight } from "lucide-react";
 import type { ProjectId, TeamId } from "@/lib/schemas";
 import { organizationsAtom } from "@/lib/atoms/organizations";
@@ -24,19 +25,25 @@ export function HeaderBreadcrumbs({ orgName }: HeaderBreadcrumbsProps) {
       : null;
   const organizations = useAtomValue(organizationsAtom);
   const projects = useProjectsAtom();
-  const organization =
-    organizations._tag === "Success"
-      ? (organizations.value.find((org) => org.slug === orgSlug) ?? null)
-      : null;
+  const organizationEntries = AsyncResult.match(organizations, {
+    onInitial: () => [],
+    onFailure: () => [],
+    onSuccess: ({ value }) => value,
+  });
+  const organization = organizationEntries.find((org) => org.slug === orgSlug) ?? null;
   const teams = useAtomValue(teamsAtom(organization?.id ?? null));
-  const team =
-    teams._tag === "Success"
-      ? (teams.value.find((entry) => entry.id === (teamSlug as TeamId)) ?? null)
-      : null;
-  const project =
-    projects._tag === "Success"
-      ? (projects.value.find((entry) => entry.id === projectId) ?? null)
-      : null;
+  const teamEntries = AsyncResult.match(teams, {
+    onInitial: () => [],
+    onFailure: () => [],
+    onSuccess: ({ value }) => value,
+  });
+  const team = teamEntries.find((entry) => entry.id === (teamSlug as TeamId)) ?? null;
+  const projectEntries = AsyncResult.match(projects, {
+    onInitial: () => [],
+    onFailure: () => [],
+    onSuccess: ({ value }) => value,
+  });
+  const project = projectEntries.find((entry) => entry.id === projectId) ?? null;
 
   const crumbs: Array<{
     label: string;

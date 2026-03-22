@@ -7,5 +7,5 @@
 - [x] Fix creating organization doesn't set it to the organization properly
 - [x] No way to open sidebar on mobile or just smaller screens
 - [x] Projects dont seem team based
-- [ ] Project right click doesn't have a menu
-- [ ] Fix ternary operator instead of Result matching with effect atom
+- [x] Project right click doesn't have a menu
+- [x] Fix ternary operator instead of Result matching with effect atom
