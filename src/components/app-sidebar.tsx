@@ -64,7 +64,7 @@ export function AppSidebar({
   const organizations = orgsResult._tag === "Success" ? orgsResult.value : [];
 
   const activeOrg =
-    currentOrgSlug && currentOrgSlug !== "personal"
+    currentOrgSlug
       ? (organizations.find((o) => o.slug === currentOrgSlug) ?? null)
       : null;
 
@@ -88,11 +88,11 @@ export function AppSidebar({
   async function handleSetActiveOrg(
     org: { id: string; slug: string | null } | null,
   ) {
+    if (!org?.slug) return;
     await authClient.organization.setActive({
-      organizationId: org?.id ?? null,
+      organizationId: org.id,
     });
-    const slug = org?.slug ?? "personal";
-    router.navigate({ to: "/$orgSlug/tasks", params: { orgSlug: slug } });
+    router.navigate({ to: "/$orgSlug/tasks", params: { orgSlug: org.slug } });
   }
 
   async function handleSignOut() {
@@ -125,7 +125,7 @@ export function AppSidebar({
                   </div>
                   <div className="flex flex-col gap-0.5 leading-none">
                     <span className="font-semibold">
-                      {activeOrg?.name ?? "Personal"}
+                      {activeOrg?.name ?? "Select organization"}
                     </span>
                     <span className="text-xs text-muted-foreground">
                       {activeOrg ? "Organization" : "No organization selected"}
@@ -138,11 +138,6 @@ export function AppSidebar({
                 align="start"
                 className="w-[--radix-dropdown-menu-trigger-width]"
               >
-                <DropdownMenuItem onClick={() => handleSetActiveOrg(null)}>
-                  <Building2 className="mr-2 size-4" />
-                  Personal
-                  {!activeOrg && <Check className="ml-auto size-4" />}
-                </DropdownMenuItem>
                 {organizations.map((org) => (
                   <DropdownMenuItem
                     key={org.id}
@@ -155,6 +150,13 @@ export function AppSidebar({
                     )}
                   </DropdownMenuItem>
                 ))}
+                {organizations.length > 0 && <DropdownMenuSeparator />}
+                <DropdownMenuItem asChild>
+                  <a href="/create-organization">
+                    <Plus className="mr-2 size-4" />
+                    Create organization
+                  </a>
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </SidebarMenuItem>

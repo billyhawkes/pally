@@ -1,21 +1,23 @@
-import { createFileRoute, redirect } from "@tanstack/react-router"
-import { Button } from "@/components/ui/button"
-import { getSession } from "@/lib/services/AuthService"
-import { getFirstOrgSlug } from "@/lib/services/OrganizationService"
+import { createFileRoute, redirect } from "@tanstack/react-router";
+import { Button } from "@/components/ui/button";
+import { getSession, getFirstOrgSlug } from "@/lib/client-auth";
 
 export const Route = createFileRoute("/")({
   beforeLoad: async () => {
-    const session = await getSession()
+    const session = await getSession();
     if (session) {
-      const slug = await getFirstOrgSlug()
-      throw redirect({
-        to: "/$orgSlug/tasks",
-        params: { orgSlug: slug ?? "personal" },
-      })
+      const slug = await getFirstOrgSlug();
+      if (slug) {
+        throw redirect({
+          to: "/$orgSlug/tasks",
+          params: { orgSlug: slug },
+        });
+      }
+      throw redirect({ to: "/create-organization" });
     }
   },
   component: HomePage,
-})
+});
 
 function HomePage() {
   return (
@@ -33,5 +35,5 @@ function HomePage() {
         </Button>
       </div>
     </div>
-  )
+  );
 }

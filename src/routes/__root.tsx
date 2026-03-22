@@ -4,7 +4,6 @@ import {
   createRootRouteWithContext,
 } from "@tanstack/react-router";
 import { RegistryProvider } from "@effect/atom-react";
-import { AuthProvider } from "@/lib/auth-context";
 
 import appCss from "@/styles.css?url";
 
@@ -28,9 +27,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <HeadContent />
       </head>
       <body className="min-h-screen bg-background font-sans antialiased">
-        <RegistryProvider>
-          <AuthProvider>{children}</AuthProvider>
-        </RegistryProvider>
+        <RegistryProvider>{children}</RegistryProvider>
         <Scripts />
       </body>
     </html>
