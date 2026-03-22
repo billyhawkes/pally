@@ -94,7 +94,7 @@ export function AppSidebar({
     router.navigate({
       to: "/org/$orgSlug/tasks",
       params: { orgSlug: org.slug },
-      search: { tab: taskTab },
+      search: { tab: taskTab, status: [], priority: [], projectId: null },
     });
   }
 
@@ -177,7 +177,7 @@ export function AppSidebar({
                     <Link
                       to="/org/$orgSlug/tasks"
                       params={{ orgSlug: currentOrgSlug }}
-                      search={{ tab: taskTab }}
+                      search={{ tab: taskTab, status: [], priority: [], projectId: null }}
                     >
                       <item.icon className="size-4" />
                       <span>{item.title}</span>
@@ -233,7 +233,7 @@ export function AppSidebar({
                           orgSlug: currentOrgSlug,
                           teamSlug: team.id,
                         }}
-                        search={{ tab: taskTab }}
+                        search={{ tab: taskTab, status: [], priority: [], projectId: null }}
                       >
                         <Users className="size-4" />
                         <span>{team.name}</span>

@@ -5,7 +5,7 @@ export const Route = createFileRoute("/org/$orgSlug/")({
     throw redirect({
       to: "/org/$orgSlug/tasks",
       params: { orgSlug: params.orgSlug },
-      search: { tab: "table" },
+      search: { tab: "table", status: [], priority: [], projectId: null },
     });
   },
 });

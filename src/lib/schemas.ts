@@ -97,15 +97,18 @@ export const UpdateProjectPayload = Schema.Struct({
 });
 export type UpdateProjectPayload = typeof UpdateProjectPayload.Type;
 
+export const TaskFilters = Schema.Struct({
+  status: Schema.NullOr(Schema.Array(TaskStatus)),
+  priority: Schema.NullOr(Schema.Array(TaskPriority)),
+  projectId: Schema.NullOr(ProjectId),
+});
+export type TaskFilters = typeof TaskFilters.Type;
+
 export const View = Schema.Struct({
   id: ViewId,
   name: Schema.NonEmptyString,
   orgId: Schema.NullOr(OrganizationId),
-  filters: Schema.Struct({
-    status: Schema.NullOr(Schema.Array(TaskStatus)),
-    priority: Schema.NullOr(Schema.Array(TaskPriority)),
-    projectId: Schema.NullOr(ProjectId),
-  }),
+  filters: TaskFilters,
   createdAt: DateFromHttp,
   updatedAt: DateFromHttp,
 });
@@ -114,24 +117,14 @@ export type View = typeof View.Type;
 export const CreateViewPayload = Schema.Struct({
   name: Schema.NonEmptyString,
   orgId: Schema.NullOr(OrganizationId),
-  filters: Schema.Struct({
-    status: Schema.NullOr(Schema.Array(TaskStatus)),
-    priority: Schema.NullOr(Schema.Array(TaskPriority)),
-    projectId: Schema.NullOr(ProjectId),
-  }),
+  filters: TaskFilters,
 });
 export type CreateViewPayload = typeof CreateViewPayload.Type;
 
 export const UpdateViewPayload = Schema.Struct({
   name: Schema.optionalKey(Schema.NonEmptyString),
   orgId: Schema.optionalKey(Schema.NullOr(OrganizationId)),
-  filters: Schema.optionalKey(
-    Schema.Struct({
-      status: Schema.NullOr(Schema.Array(TaskStatus)),
-      priority: Schema.NullOr(Schema.Array(TaskPriority)),
-      projectId: Schema.NullOr(ProjectId),
-    }),
-  ),
+  filters: Schema.optionalKey(TaskFilters),
 });
 export type UpdateViewPayload = typeof UpdateViewPayload.Type;
 
