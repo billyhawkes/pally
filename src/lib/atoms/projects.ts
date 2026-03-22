@@ -27,6 +27,8 @@ const optimisticProject = (payload: CreateProjectPayload): Project => {
     name: payload.name,
     description: payload.description,
     orgId: payload.orgId,
+    githubRepositoryFullName: payload.githubRepositoryFullName ?? null,
+    githubInstallationId: payload.githubInstallationId ?? null,
     createdAt: now,
     updatedAt: now,
   };

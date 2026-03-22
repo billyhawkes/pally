@@ -70,7 +70,7 @@ Goal: Connect TanStack DB to the Effect API and display data in the UI.
 Goal: Connect Github with the Effect API with two-way syncing.
 
 - [x] Build Github integration
-- [ ] Build two-way Github repository issue syncing
+- [ ] Build two-way Github repository issue syncing with Pally repository Github App
 
 ## Phase 7: New features
 - [ ] Task types (eg. bug, feature, chore, etc.)

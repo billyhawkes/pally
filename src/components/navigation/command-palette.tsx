@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useAtomValue } from "@effect/atom-react";
 import { formatForDisplay, useHotkey } from "@tanstack/react-hotkeys";
-import { useParams, useRouter } from "@tanstack/react-router";
+import { useRouter } from "@tanstack/react-router";
 import {
   Building2,
   ClipboardList,
@@ -50,7 +50,6 @@ const favoriteStorageKey = "pally.command-palette.favorites";
 
 export function CommandPalette() {
   const router = useRouter();
-  const params = useParams({ strict: false });
   const organizationsResult = useAtomValue(organizationsAtom);
   const projectsResult = useProjectsAtom();
   const [open, setOpen] = useState(false);
@@ -63,11 +62,15 @@ export function CommandPalette() {
 
   const organizations =
     organizationsResult._tag === "Success" ? organizationsResult.value : [];
-  const orgSlug = params.orgSlug ?? "";
-  const teamSlug = params.teamSlug ?? null;
-  const projectIdParam = params.projectId ?? null;
-  const taskTab = isTaskViewMode(router.state.location.search.tab)
-    ? router.state.location.search.tab
+  const pathSegments = router.state.location.pathname.split("/").filter(Boolean);
+  const orgSlug = pathSegments[0] === "org" ? (pathSegments[1] ?? "") : "";
+  const teamSlug = pathSegments[2] === "team" ? (pathSegments[3] ?? null) : null;
+  const projectSegmentIndex = pathSegments.indexOf("projects");
+  const projectIdParam =
+    projectSegmentIndex >= 0 ? (pathSegments[projectSegmentIndex + 1] ?? null) : null;
+  const locationSearch = router.state.location.search as { tab?: string };
+  const taskTab = isTaskViewMode(locationSearch.tab)
+    ? locationSearch.tab
     : "table";
 
   const activeOrg =

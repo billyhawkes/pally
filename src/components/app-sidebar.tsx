@@ -99,8 +99,9 @@ export function AppSidebar({
   const params = useParams({ from: "/org/$orgSlug" });
   const currentOrgSlug = params.orgSlug;
   const currentPath = router.state.location.pathname;
-  const taskTab = isTaskViewMode(router.state.location.search.tab)
-    ? router.state.location.search.tab
+  const locationSearch = router.state.location.search as { tab?: string };
+  const taskTab = isTaskViewMode(locationSearch.tab)
+    ? locationSearch.tab
     : "table";
 
   const orgsResult = useAtomValue(organizationsAtom);

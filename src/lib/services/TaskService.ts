@@ -119,6 +119,9 @@ export class TaskService extends ServiceMap.Service<
           orgId: payload.orgId,
           projectId: payload.projectId,
           teamId: payload.teamId,
+          githubIssueNumber: null,
+          githubIssueId: null,
+          githubIssueUrl: null,
           createdAt: new Date(now),
           updatedAt: new Date(now),
         });
@@ -169,6 +172,9 @@ export class TaskService extends ServiceMap.Service<
             "teamId" in payload
               ? (payload.teamId ?? null)
               : existing.teamId,
+          githubIssueNumber: existing.githubIssueNumber,
+          githubIssueId: existing.githubIssueId,
+          githubIssueUrl: existing.githubIssueUrl,
           createdAt: existing.createdAt,
           updatedAt: new Date(now),
         });

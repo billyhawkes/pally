@@ -46,6 +46,9 @@ export const Task = Schema.Struct({
   orgId: Schema.NullOr(OrganizationId),
   projectId: Schema.NullOr(ProjectId),
   teamId: Schema.NullOr(TeamId),
+  githubIssueNumber: Schema.NullOr(Schema.Number),
+  githubIssueId: Schema.NullOr(Schema.String),
+  githubIssueUrl: Schema.NullOr(Schema.String),
   createdAt: DateFromHttp,
   updatedAt: DateFromHttp,
 });
@@ -78,6 +81,8 @@ export const Project = Schema.Struct({
   name: Schema.NonEmptyString,
   description: Schema.NullOr(Schema.String),
   orgId: Schema.NullOr(OrganizationId),
+  githubRepositoryFullName: Schema.NullOr(Schema.String),
+  githubInstallationId: Schema.NullOr(Schema.String),
   createdAt: DateFromHttp,
   updatedAt: DateFromHttp,
 });
@@ -87,6 +92,8 @@ export const CreateProjectPayload = Schema.Struct({
   name: Schema.NonEmptyString,
   description: Schema.NullOr(Schema.String),
   orgId: Schema.NullOr(OrganizationId),
+  githubRepositoryFullName: Schema.optionalKey(Schema.NullOr(Schema.String)),
+  githubInstallationId: Schema.optionalKey(Schema.NullOr(Schema.String)),
 });
 export type CreateProjectPayload = typeof CreateProjectPayload.Type;
 
@@ -94,6 +101,8 @@ export const UpdateProjectPayload = Schema.Struct({
   name: Schema.optionalKey(Schema.NonEmptyString),
   description: Schema.optionalKey(Schema.NullOr(Schema.String)),
   orgId: Schema.optionalKey(Schema.NullOr(OrganizationId)),
+  githubRepositoryFullName: Schema.optionalKey(Schema.NullOr(Schema.String)),
+  githubInstallationId: Schema.optionalKey(Schema.NullOr(Schema.String)),
 });
 export type UpdateProjectPayload = typeof UpdateProjectPayload.Type;
 
@@ -176,12 +185,32 @@ export type Team = typeof Team.Type;
 export const GithubIntegration = Schema.Struct({
   provider: Schema.Literal("github"),
   providerConfigured: Schema.Boolean,
+  appConfigured: Schema.Boolean,
   connected: Schema.Boolean,
   accountId: Schema.NullOr(Schema.String),
   scope: Schema.NullOr(Schema.String),
   connectedAt: Schema.NullOr(DateFromHttp),
 });
 export type GithubIntegration = typeof GithubIntegration.Type;
+
+export const GithubInstallUrl = Schema.Struct({
+  url: Schema.String,
+});
+export type GithubInstallUrl = typeof GithubInstallUrl.Type;
+
+export const GithubInstallationRepository = Schema.Struct({
+  id: Schema.Number,
+  name: Schema.String,
+  fullName: Schema.String,
+  private: Schema.Boolean,
+});
+export type GithubInstallationRepository = typeof GithubInstallationRepository.Type;
+
+export const GithubInstallState = Schema.Struct({
+  projectId: Schema.String,
+  returnTo: Schema.String,
+});
+export type GithubInstallState = typeof GithubInstallState.Type;
 
 // Error types
 export class UnauthorizedError extends Schema.TaggedErrorClass(

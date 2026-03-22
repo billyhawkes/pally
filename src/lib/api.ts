@@ -2,6 +2,7 @@ import { Schema, ServiceMap } from "effect";
 import {
   HttpApi,
   HttpApiEndpoint,
+  HttpApiSchema,
   HttpApiGroup,
   HttpApiMiddleware,
   HttpApiError,
@@ -11,6 +12,8 @@ import {
   CreateTaskPayload,
   CreateViewPayload,
   GithubIntegration,
+  GithubInstallUrl,
+  GithubInstallationRepository,
   Organization,
   OrganizationId,
   Project,
@@ -230,9 +233,45 @@ const getGithubIntegration = HttpApiEndpoint.get(
   },
 );
 
+const getGithubInstallUrl = HttpApiEndpoint.get(
+  "getGithubInstallUrl",
+  "/github/install-url",
+  {
+    success: GithubInstallUrl,
+    query: Schema.Struct({
+      projectId: ProjectId,
+      returnTo: Schema.String,
+    }),
+  },
+);
+
+const listGithubInstallationRepositories = HttpApiEndpoint.get(
+  "listGithubInstallationRepositories",
+  "/github/installations/:installationId/repositories",
+  {
+    success: Schema.Array(GithubInstallationRepository),
+    params: Schema.Struct({
+      installationId: Schema.String,
+    }),
+  },
+);
+
+const handleGithubWebhook = HttpApiEndpoint.post(
+  "handleGithubWebhook",
+  "/github/webhook",
+  {
+    success: HttpApiSchema.NoContent,
+    error: [HttpApiError.BadRequestNoContent, HttpApiError.UnauthorizedNoContent],
+  },
+);
+
 const githubGroup = HttpApiGroup.make("github")
   .add(getGithubIntegration)
+  .add(getGithubInstallUrl)
+  .add(listGithubInstallationRepositories)
   .middleware(Authentication);
+
+const githubWebhookGroup = HttpApiGroup.make("githubWebhook").add(handleGithubWebhook);
 
 // Main API
 export const PallyApi = HttpApi.make("PallyApi")
@@ -242,4 +281,5 @@ export const PallyApi = HttpApi.make("PallyApi")
   .add(organizationsGroup)
   .add(teamsGroup)
   .add(githubGroup)
+  .add(githubWebhookGroup)
   .prefix("/api");

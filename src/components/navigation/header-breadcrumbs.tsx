@@ -1,5 +1,5 @@
 import { useAtomValue } from "@effect/atom-react";
-import { useParams, useRouter } from "@tanstack/react-router";
+import { useRouter } from "@tanstack/react-router";
 import { ChevronRight } from "lucide-react";
 import type { ProjectId, TeamId } from "@/lib/schemas";
 import { organizationsAtom } from "@/lib/atoms/organizations";
@@ -12,12 +12,16 @@ type HeaderBreadcrumbsProps = {
 };
 
 export function HeaderBreadcrumbs({ orgName }: HeaderBreadcrumbsProps) {
-  const params = useParams({ strict: false });
   const router = useRouter();
   const pathname = router.state.location.pathname;
-  const orgSlug = params.orgSlug ?? "";
-  const teamSlug = params.teamSlug ?? null;
-  const projectId = (params.projectId as ProjectId | undefined) ?? null;
+  const pathSegments = pathname.split("/").filter(Boolean);
+  const orgSlug = pathSegments[0] === "org" ? (pathSegments[1] ?? "") : "";
+  const teamSlug = pathSegments[2] === "team" ? (pathSegments[3] ?? null) : null;
+  const projectSegmentIndex = pathSegments.indexOf("projects");
+  const projectId =
+    projectSegmentIndex >= 0
+      ? ((pathSegments[projectSegmentIndex + 1] as ProjectId | undefined) ?? null)
+      : null;
   const organizations = useAtomValue(organizationsAtom);
   const projects = useProjectsAtom();
   const organization =
@@ -42,7 +46,7 @@ export function HeaderBreadcrumbs({ orgName }: HeaderBreadcrumbsProps) {
     {
       label: orgName,
       current:
-        !params.teamSlug && !pathname.includes("/projects") && !pathname.endsWith("/tasks"),
+        !teamSlug && !pathname.includes("/projects") && !pathname.endsWith("/tasks"),
       onClick: () =>
         router.navigate({
           to: "/org/$orgSlug/tasks",

@@ -31,6 +31,9 @@ const optimisticTask = (payload: CreateTaskPayload): Task => {
     orgId: payload.orgId,
     projectId: payload.projectId,
     teamId: payload.teamId,
+    githubIssueNumber: null,
+    githubIssueId: null,
+    githubIssueUrl: null,
     createdAt: now,
     updatedAt: now,
   };

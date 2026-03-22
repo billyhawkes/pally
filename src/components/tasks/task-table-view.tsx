@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react"
 import { useAtomSet } from "@effect/atom-react"
-import { Link, useParams } from "@tanstack/react-router"
+import { Link, useRouter } from "@tanstack/react-router"
 import {
   flexRender,
   getCoreRowModel,
@@ -54,7 +54,9 @@ export function TaskTableView({
   tasks,
   emptyMessage = "No tasks yet.",
 }: TaskTableViewProps) {
-  const params = useParams({ strict: false })
+  const router = useRouter()
+  const pathSegments = router.state.location.pathname.split("/").filter(Boolean)
+  const orgSlug = pathSegments[0] === "org" ? (pathSegments[1] ?? null) : null
   const update = useAtomSet(updateTaskAtom)
   const remove = useAtomSet(deleteTaskAtom)
   const projects = useProjectsAtom()
@@ -140,7 +142,7 @@ export function TaskTableView({
             : null
 
           return (
-            projectId && params.orgSlug ? (
+            projectId && orgSlug ? (
               <Link
                 to={
                   row.original.teamId
@@ -150,12 +152,12 @@ export function TaskTableView({
                 params={
                   row.original.teamId
                     ? {
-                        orgSlug: params.orgSlug,
+                        orgSlug,
                         teamSlug: row.original.teamId,
                         projectId,
                       }
                     : {
-                        orgSlug: params.orgSlug,
+                        orgSlug,
                         projectId,
                       }
                 }

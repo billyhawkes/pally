@@ -17,6 +17,7 @@ import { Route as AuthCreateOrganizationRouteImport } from './routes/auth/create
 import { Route as ApiSplatRouteImport } from './routes/api/$'
 import { Route as OrgOrgSlugIndexRouteImport } from './routes/org/$orgSlug/index'
 import { Route as OrgOrgSlugProjectsRouteImport } from './routes/org/$orgSlug/projects'
+import { Route as GithubInstallCallbackRouteImport } from './routes/github/install/callback'
 import { Route as ApiAuthProvidersRouteImport } from './routes/api/auth/providers'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth.$'
 import { Route as OrgOrgSlugTasksIndexRouteImport } from './routes/org/$orgSlug/tasks.index'
@@ -67,6 +68,11 @@ const OrgOrgSlugProjectsRoute = OrgOrgSlugProjectsRouteImport.update({
   id: '/projects',
   path: '/projects',
   getParentRoute: () => OrgOrgSlugRoute,
+} as any)
+const GithubInstallCallbackRoute = GithubInstallCallbackRouteImport.update({
+  id: '/github/install/callback',
+  path: '/github/install/callback',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const ApiAuthProvidersRoute = ApiAuthProvidersRouteImport.update({
   id: '/api/auth/providers',
@@ -133,6 +139,7 @@ export interface FileRoutesByFullPath {
   '/org/$orgSlug': typeof OrgOrgSlugRouteWithChildren
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/auth/providers': typeof ApiAuthProvidersRoute
+  '/github/install/callback': typeof GithubInstallCallbackRoute
   '/org/$orgSlug/projects': typeof OrgOrgSlugProjectsRouteWithChildren
   '/org/$orgSlug/': typeof OrgOrgSlugIndexRoute
   '/org/$orgSlug/team/$teamSlug': typeof OrgOrgSlugTeamTeamSlugRouteWithChildren
@@ -152,6 +159,7 @@ export interface FileRoutesByTo {
   '/auth/signup': typeof AuthSignupRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/auth/providers': typeof ApiAuthProvidersRoute
+  '/github/install/callback': typeof GithubInstallCallbackRoute
   '/org/$orgSlug': typeof OrgOrgSlugIndexRoute
   '/org/$orgSlug/team/$teamSlug': typeof OrgOrgSlugTeamTeamSlugRouteWithChildren
   '/org/$orgSlug/projects': typeof OrgOrgSlugProjectsIndexRoute
@@ -171,6 +179,7 @@ export interface FileRoutesById {
   '/org/$orgSlug': typeof OrgOrgSlugRouteWithChildren
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/auth/providers': typeof ApiAuthProvidersRoute
+  '/github/install/callback': typeof GithubInstallCallbackRoute
   '/org/$orgSlug/projects': typeof OrgOrgSlugProjectsRouteWithChildren
   '/org/$orgSlug/': typeof OrgOrgSlugIndexRoute
   '/org/$orgSlug/team/$teamSlug': typeof OrgOrgSlugTeamTeamSlugRouteWithChildren
@@ -193,6 +202,7 @@ export interface FileRouteTypes {
     | '/org/$orgSlug'
     | '/api/auth/$'
     | '/api/auth/providers'
+    | '/github/install/callback'
     | '/org/$orgSlug/projects'
     | '/org/$orgSlug/'
     | '/org/$orgSlug/team/$teamSlug'
@@ -212,6 +222,7 @@ export interface FileRouteTypes {
     | '/auth/signup'
     | '/api/auth/$'
     | '/api/auth/providers'
+    | '/github/install/callback'
     | '/org/$orgSlug'
     | '/org/$orgSlug/team/$teamSlug'
     | '/org/$orgSlug/projects'
@@ -230,6 +241,7 @@ export interface FileRouteTypes {
     | '/org/$orgSlug'
     | '/api/auth/$'
     | '/api/auth/providers'
+    | '/github/install/callback'
     | '/org/$orgSlug/projects'
     | '/org/$orgSlug/'
     | '/org/$orgSlug/team/$teamSlug'
@@ -251,6 +263,7 @@ export interface RootRouteChildren {
   OrgOrgSlugRoute: typeof OrgOrgSlugRouteWithChildren
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
   ApiAuthProvidersRoute: typeof ApiAuthProvidersRoute
+  GithubInstallCallbackRoute: typeof GithubInstallCallbackRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -310,6 +323,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/org/$orgSlug/projects'
       preLoaderRoute: typeof OrgOrgSlugProjectsRouteImport
       parentRoute: typeof OrgOrgSlugRoute
+    }
+    '/github/install/callback': {
+      id: '/github/install/callback'
+      path: '/github/install/callback'
+      fullPath: '/github/install/callback'
+      preLoaderRoute: typeof GithubInstallCallbackRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/api/auth/providers': {
       id: '/api/auth/providers'
@@ -459,6 +479,7 @@ const rootRouteChildren: RootRouteChildren = {
   OrgOrgSlugRoute: OrgOrgSlugRouteWithChildren,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
   ApiAuthProvidersRoute: ApiAuthProvidersRoute,
+  GithubInstallCallbackRoute: GithubInstallCallbackRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

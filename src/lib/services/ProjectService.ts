@@ -65,6 +65,8 @@ export class ProjectService extends ServiceMap.Service<
             name: payload.name,
             description: payload.description,
             orgId: payload.orgId,
+            githubRepositoryFullName: payload.githubRepositoryFullName ?? null,
+            githubInstallationId: payload.githubInstallationId ?? null,
           })
         )
         return decodeProject({
@@ -72,6 +74,8 @@ export class ProjectService extends ServiceMap.Service<
           name: payload.name,
           description: payload.description,
           orgId: payload.orgId,
+          githubRepositoryFullName: payload.githubRepositoryFullName ?? null,
+          githubInstallationId: payload.githubInstallationId ?? null,
           createdAt: new Date(now),
           updatedAt: new Date(now),
         })
@@ -86,6 +90,12 @@ export class ProjectService extends ServiceMap.Service<
           if ("name" in payload) setValues.name = payload.name
           if ("description" in payload) setValues.description = payload.description ?? null
           if ("orgId" in payload) setValues.orgId = payload.orgId ?? null
+          if ("githubRepositoryFullName" in payload) {
+            setValues.githubRepositoryFullName = payload.githubRepositoryFullName ?? null
+          }
+          if ("githubInstallationId" in payload) {
+            setValues.githubInstallationId = payload.githubInstallationId ?? null
+          }
 
           yield* dbQuery(
             db.update(projects).set(setValues).where(eq(projects.id, id as string))
@@ -96,6 +106,14 @@ export class ProjectService extends ServiceMap.Service<
             name: "name" in payload ? payload.name : existing.name,
             description: "description" in payload ? (payload.description ?? null) : existing.description,
             orgId: "orgId" in payload ? (payload.orgId ?? null) : existing.orgId,
+            githubRepositoryFullName:
+              "githubRepositoryFullName" in payload
+                ? (payload.githubRepositoryFullName ?? null)
+                : existing.githubRepositoryFullName,
+            githubInstallationId:
+              "githubInstallationId" in payload
+                ? (payload.githubInstallationId ?? null)
+                : existing.githubInstallationId,
             createdAt: existing.createdAt,
             updatedAt: new Date(now),
           })

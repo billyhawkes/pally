@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { Schema } from "effect";
-import { useAtomSet } from "@effect/atom-react";
+import { useAtomSet, useAtomValue } from "@effect/atom-react";
 import { ChevronRight } from "lucide-react";
 import {
   CreateProjectPayload,
@@ -11,6 +11,7 @@ import {
   createProjectAtom,
   updateProjectAtom,
 } from "@/lib/atoms/projects";
+import { githubIntegrationAtom } from "@/lib/atoms/github";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
@@ -23,6 +24,7 @@ const decodeUpdateProjectPayload = Schema.decodeUnknownSync(UpdateProjectPayload
 const initialValues = {
   name: "",
   description: "",
+  githubRepositoryFullName: "",
 };
 
 type CreateProjectDialogProps = {
@@ -60,9 +62,13 @@ function getProjectDialogErrorMessage(isEditing: boolean, error: unknown) {
 export function ProjectDialog({ trigger, ...props }: ProjectDialogProps) {
   const create = useAtomSet(createProjectAtom);
   const update = useAtomSet(updateProjectAtom);
+  const githubIntegrationResult = useAtomValue(githubIntegrationAtom);
   const [internalOpen, setInternalOpen] = useState(false);
   const [name, setName] = useState(initialValues.name);
   const [description, setDescription] = useState(initialValues.description);
+  const [githubRepositoryFullName, setGithubRepositoryFullName] = useState(
+    initialValues.githubRepositoryFullName,
+  );
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -70,6 +76,9 @@ export function ProjectDialog({ trigger, ...props }: ProjectDialogProps) {
   const isEditing = editingProject !== null;
   const open = props.open ?? internalOpen;
   const orgId = isEditing ? editingProject.orgId : props.orgId;
+  const githubIntegration =
+    githubIntegrationResult._tag === "Success" ? githubIntegrationResult.value : null;
+  const isGithubAppConfigured = githubIntegration?.appConfigured ?? false;
 
   const breadcrumbs = useMemo(
     () => (isEditing ? [] : (props.breadcrumbs?.filter(Boolean) ?? [])),
@@ -84,6 +93,7 @@ export function ProjectDialog({ trigger, ...props }: ProjectDialogProps) {
     if (editingProject) {
       setName(editingProject.name);
       setDescription(editingProject.description ?? "");
+      setGithubRepositoryFullName(editingProject.githubRepositoryFullName ?? "");
       setError("");
       setIsSubmitting(false);
       return;
@@ -91,6 +101,7 @@ export function ProjectDialog({ trigger, ...props }: ProjectDialogProps) {
 
     setName(initialValues.name);
     setDescription(initialValues.description);
+    setGithubRepositoryFullName(initialValues.githubRepositoryFullName);
     setError("");
     setIsSubmitting(false);
   }, [editingProject, open]);
@@ -98,6 +109,7 @@ export function ProjectDialog({ trigger, ...props }: ProjectDialogProps) {
   const resetForm = () => {
     setName(initialValues.name);
     setDescription(initialValues.description);
+    setGithubRepositoryFullName(initialValues.githubRepositoryFullName);
     setError("");
     setIsSubmitting(false);
   };
@@ -135,6 +147,7 @@ export function ProjectDialog({ trigger, ...props }: ProjectDialogProps) {
           name: name.trim(),
           description: description.trim() || null,
           orgId,
+          githubRepositoryFullName: githubRepositoryFullName.trim() || null,
         });
 
         await Promise.resolve(
@@ -149,6 +162,7 @@ export function ProjectDialog({ trigger, ...props }: ProjectDialogProps) {
           name: name.trim(),
           description: description.trim() || null,
           orgId,
+          githubRepositoryFullName: githubRepositoryFullName.trim() || null,
         });
 
         await Promise.resolve(
@@ -160,6 +174,38 @@ export function ProjectDialog({ trigger, ...props }: ProjectDialogProps) {
       }
 
       handleOpenChange(false);
+    } catch (error) {
+      setError(getProjectDialogErrorMessage(isEditing, error));
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleInstallGithubApp = async () => {
+    if (!editingProject) {
+      return;
+    }
+
+    setError("");
+    setIsSubmitting(true);
+
+    try {
+      const query = new URLSearchParams({
+        projectId: editingProject.id,
+        returnTo: window.location.pathname + window.location.search,
+      });
+      const response = await fetch(`/api/github/install-url?${query.toString()}`);
+
+      if (!response.ok) {
+        throw new Error("Failed to start GitHub App install flow");
+      }
+
+      const data = (await response.json()) as { url?: string };
+
+      if (!data.url) {
+        throw new Error("GitHub App install URL is missing");
+      }
+
+      window.location.assign(data.url);
     } catch (error) {
       setError(getProjectDialogErrorMessage(isEditing, error));
       setIsSubmitting(false);
@@ -226,6 +272,42 @@ export function ProjectDialog({ trigger, ...props }: ProjectDialogProps) {
               placeholder="Add description..."
               className="min-h-28 w-full resize-none rounded-none border-0 bg-transparent px-0 py-0 text-sm leading-6 text-muted-foreground outline-none placeholder:text-muted-foreground/70 focus-visible:border-transparent focus-visible:ring-0 md:text-base"
             />
+
+            <div className="space-y-2 border-t border-border/50 pt-4">
+              <div className="flex items-center justify-between gap-3">
+                <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
+                  GitHub repository
+                </p>
+                {isEditing ? (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    disabled={isSubmitting || !isGithubAppConfigured}
+                    onClick={handleInstallGithubApp}
+                  >
+                    Install/select in GitHub
+                  </Button>
+                ) : null}
+              </div>
+              <Input
+                id="project-github-repository"
+                value={githubRepositoryFullName}
+                onChange={(event) => setGithubRepositoryFullName(event.target.value)}
+                placeholder="owner/repository"
+                spellCheck={false}
+                autoCapitalize="none"
+                autoCorrect="off"
+                className="border-border/60 bg-background/80"
+              />
+              <p className="text-xs text-muted-foreground">
+                {isEditing
+                  ? isGithubAppConfigured
+                    ? "Use the install flow to choose a repo, or enter owner/repository manually."
+                    : "Set GITHUB_APP_ID, GITHUB_APP_SLUG, and GITHUB_APP_PRIVATE_KEY to enable the install flow."
+                  : "Optional. Create the project first, then reopen it to use the GitHub install flow."}
+              </p>
+            </div>
           </div>
 
           <div className="flex items-center justify-between border-t bg-muted/20 px-5 py-3">

@@ -1,4 +1,4 @@
-import { Link, createFileRoute, useRouter } from "@tanstack/react-router"
+import { Link, createFileRoute } from "@tanstack/react-router"
 import { useEffect, useState, type FormEvent } from "react"
 import { Github, LoaderCircle } from "lucide-react"
 import { authClient } from "@/lib/auth-client"
@@ -24,7 +24,6 @@ export const Route = createFileRoute("/auth/login")({
 
 function LoginPage() {
   const search = Route.useSearch()
-  const router = useRouter()
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
   const [githubLoading, setGithubLoading] = useState(false)
@@ -89,7 +88,7 @@ function LoginPage() {
       return
     }
 
-    router.navigate({ to: search.redirect })
+    window.location.assign(search.redirect)
   }
 
   const handleGithubSignIn = async () => {
