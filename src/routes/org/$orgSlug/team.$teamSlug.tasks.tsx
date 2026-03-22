@@ -7,9 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
-export const Route = createFileRoute(
-  "/org/$orgSlug/team/$teamSlug/tasks",
-)({
+export const Route = createFileRoute("/org/$orgSlug/team/$teamSlug/tasks")({
   component: TeamTasksPage,
 });
 
@@ -42,9 +40,7 @@ function TeamTasksPage() {
           (tasks.value.length === 0 ? (
             <p className="text-muted-foreground">No tasks yet.</p>
           ) : (
-            tasks.value.map((task) => (
-              <TaskCard key={task.id} task={task} />
-            ))
+            tasks.value.map((task) => <TaskCard key={task.id} task={task} />)
           ))}
       </div>
     </div>
@@ -52,9 +48,7 @@ function TeamTasksPage() {
 }
 
 function CreateTaskForm({ teamId }: { teamId: TeamId }) {
-  const create = useAtomSet(
-    PallyClient.mutation("tasks", "createTask"),
-  );
+  const create = useAtomSet(PallyClient.mutation("tasks", "createTask"));
 
   return (
     <form
@@ -101,12 +95,8 @@ const priorityColors: Record<Task["priority"], string> = {
 const statuses = ["todo", "in_progress", "done"] as const;
 
 function TaskCard({ task }: { task: Task }) {
-  const update = useAtomSet(
-    PallyClient.mutation("tasks", "updateTask"),
-  );
-  const remove = useAtomSet(
-    PallyClient.mutation("tasks", "deleteTask"),
-  );
+  const update = useAtomSet(PallyClient.mutation("tasks", "updateTask"));
+  const remove = useAtomSet(PallyClient.mutation("tasks", "deleteTask"));
   const nextStatus =
     statuses[(statuses.indexOf(task.status) + 1) % statuses.length];
 

@@ -52,10 +52,21 @@ Goal: Connect TanStack DB to the Effect API and display data in the UI.
 - [x] Build sidebar navigation with Better Auth teams/organizations
 - [x] Update dashboard url to /{org}/tasks
 - [x] Add teams to sidebar. Break that down. Each team should have its own tasks. (/{org}/team/{team}/tasks) 
-- [ ] Build list/board view components for tasks
-- [ ] Display live data from the API in the web app
+- [ ] Refactor effect atom to atoms page, do team filtering client side (instead of another server request), setup optimistic updates with client side state for tasks/projects
+- [ ] Build table view for tasks (use tanstack table)
+- [ ] Build board view for tasks (with dnd)
+- [ ] Projects crud
+- [ ] Command palette with all actions
+
+## Phase 6: Github Integration
+Goal: Connect Github with the Effect API with two-way syncing.
+
+- [ ] Build Github integration
+- [ ] Build Github syncing
+- [ ] Allow linking projects to Github repos
+
 
 ## Fixes
 - [x] Api docs url
-- [ ] Fix tasks api route
-- [ ] Migrate anchor tags to links
+- [x] Fix tasks api route
+- [x] Migrate anchor tags to links

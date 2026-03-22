@@ -2,7 +2,6 @@ import {
   HeadContent,
   Scripts,
   createRootRouteWithContext,
-  useLocation,
 } from "@tanstack/react-router";
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
 import { RegistryProvider } from "@effect/atom-react";
@@ -23,8 +22,6 @@ export const Route = createRootRouteWithContext()({
 });
 
 function RootDocument({ children }: { children: React.ReactNode }) {
-  const pathname = useLocation().pathname;
-  console.log("pathname", pathname);
   return (
     <html lang="en">
       <head>
