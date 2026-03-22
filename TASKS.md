@@ -74,9 +74,14 @@ Goal: Connect Github with the Effect API with two-way syncing.
 - [ ] Verify webhook sync (need public url)
 
 ## Phase 7: New features
+Goal: Grow the featureset of Pally.
+
+- [ ] Organization members page and CRUD
+- [ ] Team members page and CRUD
 - [ ] Task types (eg. bug, feature, chore, etc.)
 - [ ] Comments (with sync)
 - [ ] CompletedAt date
 - [ ] Filtering based on date range
 - [ ] Views (save filters as a view to view later)
 - [ ] Marketing frontend page
+- [ ] OpenTelemetry integration

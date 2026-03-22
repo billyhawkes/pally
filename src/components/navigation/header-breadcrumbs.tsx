@@ -1,7 +1,14 @@
 import { useAtomValue } from "@effect/atom-react";
-import { useRouter } from "@tanstack/react-router";
+import { useMatches, useRouter } from "@tanstack/react-router";
 import { AsyncResult } from "effect/unstable/reactivity";
-import { ChevronRight } from "lucide-react";
+import {
+  Building2,
+  ChevronRight,
+  ClipboardList,
+  FolderKanban,
+  type LucideIcon,
+  Users,
+} from "lucide-react";
 import type { ProjectId, TeamId } from "@/lib/schemas";
 import { organizationsAtom } from "@/lib/atoms/organizations";
 import { teamsAtom } from "@/lib/atoms/teams";
@@ -14,15 +21,31 @@ type HeaderBreadcrumbsProps = {
 
 export function HeaderBreadcrumbs({ orgName }: HeaderBreadcrumbsProps) {
   const router = useRouter();
-  const pathname = router.state.location.pathname;
-  const pathSegments = pathname.split("/").filter(Boolean);
-  const orgSlug = pathSegments[0] === "org" ? (pathSegments[1] ?? "") : "";
-  const teamSlug = pathSegments[2] === "team" ? (pathSegments[3] ?? null) : null;
-  const projectSegmentIndex = pathSegments.indexOf("projects");
-  const projectId =
-    projectSegmentIndex >= 0
-      ? ((pathSegments[projectSegmentIndex + 1] as ProjectId | undefined) ?? null)
-      : null;
+  const matches = useMatches();
+  const findParam = (key: "orgSlug" | "teamSlug" | "projectId") => {
+    for (const match of matches) {
+      const params = match.params as Partial<Record<typeof key, string>>;
+
+      if (params[key] !== undefined) {
+        return params[key];
+      }
+    }
+
+    return undefined;
+  };
+  const currentRouteId = matches[matches.length - 1]?.routeId;
+  const orgSlug = findParam("orgSlug") ?? "";
+  const teamSlug = findParam("teamSlug") ?? null;
+  const projectId = (findParam("projectId") as ProjectId | undefined) ?? null;
+  const isOrgTasksPage = currentRouteId === "/org/$orgSlug/tasks/";
+  const isTeamTasksPage =
+    currentRouteId === "/org/$orgSlug/team/$teamSlug/tasks";
+  const isProjectsPage =
+    currentRouteId === "/org/$orgSlug/projects/" ||
+    currentRouteId === "/org/$orgSlug/team/$teamSlug/projects/";
+  const isProjectTasksPage =
+    currentRouteId === "/org/$orgSlug/projects/$projectId/tasks" ||
+    currentRouteId === "/org/$orgSlug/team/$teamSlug/projects/$projectId/tasks";
   const organizations = useAtomValue(organizationsAtom);
   const projects = useProjectsAtom();
   const organizationEntries = AsyncResult.match(organizations, {
@@ -30,30 +53,34 @@ export function HeaderBreadcrumbs({ orgName }: HeaderBreadcrumbsProps) {
     onFailure: () => [],
     onSuccess: ({ value }) => value,
   });
-  const organization = organizationEntries.find((org) => org.slug === orgSlug) ?? null;
+  const organization =
+    organizationEntries.find((org) => org.slug === orgSlug) ?? null;
   const teams = useAtomValue(teamsAtom(organization?.id ?? null));
   const teamEntries = AsyncResult.match(teams, {
     onInitial: () => [],
     onFailure: () => [],
     onSuccess: ({ value }) => value,
   });
-  const team = teamEntries.find((entry) => entry.id === (teamSlug as TeamId)) ?? null;
+  const team =
+    teamEntries.find((entry) => entry.id === (teamSlug as TeamId)) ?? null;
   const projectEntries = AsyncResult.match(projects, {
     onInitial: () => [],
     onFailure: () => [],
     onSuccess: ({ value }) => value,
   });
-  const project = projectEntries.find((entry) => entry.id === projectId) ?? null;
+  const project =
+    projectEntries.find((entry) => entry.id === projectId) ?? null;
 
   const crumbs: Array<{
     label: string;
+    icon: LucideIcon;
     current: boolean;
     onClick?: () => void;
   }> = [
     {
       label: orgName,
-      current:
-        !teamSlug && !pathname.includes("/projects") && !pathname.endsWith("/tasks"),
+      icon: Building2,
+      current: isOrgTasksPage,
       onClick: () =>
         router.navigate({
           to: "/org/$orgSlug/tasks",
@@ -65,7 +92,8 @@ export function HeaderBreadcrumbs({ orgName }: HeaderBreadcrumbsProps) {
       ? [
           {
             label: team?.name ?? teamSlug,
-            current: !pathname.includes("/projects") && pathname.endsWith("/tasks"),
+            icon: Users,
+            current: isTeamTasksPage,
             onClick: () =>
               router.navigate({
                 to: "/org/$orgSlug/team/$teamSlug/tasks",
@@ -73,16 +101,22 @@ export function HeaderBreadcrumbs({ orgName }: HeaderBreadcrumbsProps) {
                   orgSlug,
                   teamSlug,
                 },
-                search: { tab: "table", status: [], priority: [], projectId: null },
+                search: {
+                  tab: "table",
+                  status: [],
+                  priority: [],
+                  projectId: null,
+                },
               }),
           },
         ]
       : []),
-    ...(pathname.includes("/projects")
+    ...(isProjectsPage || isProjectTasksPage
       ? [
           {
             label: "Projects",
-            current: !projectId,
+            icon: FolderKanban,
+            current: isProjectsPage,
             onClick: () =>
               teamSlug
                 ? router.navigate({
@@ -105,7 +139,8 @@ export function HeaderBreadcrumbs({ orgName }: HeaderBreadcrumbsProps) {
       ? [
           {
             label: project?.name ?? projectId,
-            current: !pathname.endsWith("/tasks"),
+            icon: FolderKanban,
+            current: false,
             onClick: () =>
               teamSlug
                 ? router.navigate({
@@ -138,10 +173,11 @@ export function HeaderBreadcrumbs({ orgName }: HeaderBreadcrumbsProps) {
           },
         ]
       : []),
-    ...(pathname.endsWith("/tasks")
+    ...(isOrgTasksPage || isTeamTasksPage || isProjectTasksPage
       ? [
           {
             label: "Tasks",
+            icon: ClipboardList,
             current: true,
           },
         ]
@@ -151,11 +187,20 @@ export function HeaderBreadcrumbs({ orgName }: HeaderBreadcrumbsProps) {
   return (
     <div className="flex min-w-0 flex-wrap items-center gap-1.5">
       {crumbs.map((crumb, index) => (
-        <div key={`${crumb.label}-${index}`} className="flex items-center gap-1.5">
-          {index > 0 ? <ChevronRight className="size-3 text-muted-foreground/70" /> : null}
+        <div
+          key={`${crumb.label}-${index}`}
+          className="flex items-center gap-1.5"
+        >
+          {index > 0 ? (
+            <ChevronRight className="size-3 text-muted-foreground/70" />
+          ) : null}
           {crumb.onClick && !crumb.current ? (
             <button type="button" onClick={crumb.onClick}>
-              <Badge variant="outline" className="h-6 cursor-pointer rounded-full px-2">
+              <Badge
+                variant="outline"
+                className="h-6 cursor-pointer rounded-full px-2"
+              >
+                <crumb.icon className="size-3.5" />
                 {crumb.label}
               </Badge>
             </button>
@@ -164,6 +209,7 @@ export function HeaderBreadcrumbs({ orgName }: HeaderBreadcrumbsProps) {
               variant={crumb.current ? "secondary" : "outline"}
               className="h-6 rounded-full px-2"
             >
+              <crumb.icon className="size-3.5" />
               {crumb.label}
             </Badge>
           )}
