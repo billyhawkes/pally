@@ -21,7 +21,8 @@ function ProjectsPage() {
     onFailure: () => [],
     onSuccess: ({ value }) => value,
   });
-  const organization = organizationEntries.find((org) => org.slug === orgSlug) ?? null;
+  const organization =
+    organizationEntries.find((org) => org.slug === orgSlug) ?? null;
   const orgId = organization?.id ?? null;
   const teams = useAtomValue(teamsAtom(orgId));
   const teamEntries = AsyncResult.match(teams, {
@@ -29,11 +30,18 @@ function ProjectsPage() {
     onFailure: () => [],
     onSuccess: ({ value }) => value,
   });
-  const teamOptions = teamEntries.map((team) => ({ id: team.id, name: team.name }));
-  const teamNamesById = Object.fromEntries(teamEntries.map((team) => [team.id, team.name]));
+  const teamOptions = teamEntries.map((team) => ({
+    id: team.id,
+    name: team.name,
+  }));
+  const teamNamesById = Object.fromEntries(
+    teamEntries.map((team) => [team.id, team.name]),
+  );
   const projectsContent = AsyncResult.match(projects, {
     onInitial: () => <p className="text-muted-foreground">Loading...</p>,
-    onFailure: () => <p className="text-destructive">Failed to load projects</p>,
+    onFailure: () => (
+      <p className="text-destructive">Failed to load projects</p>
+    ),
     onSuccess: ({ value }) => (
       <ProjectTableView
         projects={value.filter((project) => project.orgId === orgId)}
@@ -88,9 +96,7 @@ function ProjectsPage() {
         />
       </div>
 
-      <div className="space-y-2">
-        {projectsContent}
-      </div>
+      <div className="space-y-2">{projectsContent}</div>
     </div>
   );
 }

@@ -1,5 +1,7 @@
 # Pally
 
+![Pally banner](./public/banner.png)
+
 Pally is a web-first project and task application inspired by Linear and GitHub Projects. It combines organization and team-based planning with a synced workflow for projects, tasks, views, and GitHub issues.
 
 Built with TanStack Start, Effect, Better Auth, Drizzle, Postgres, Bun, and shadcn/ui, Pally is designed to support both a browser-first experience and a CLI/API workflow.
