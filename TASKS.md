@@ -52,14 +52,14 @@ Goal: Connect TanStack DB to the Effect API and display data in the UI.
 - [x] Build sidebar navigation with Better Auth teams/organizations
 - [x] Update dashboard url to /{org}/tasks
 - [x] Add teams to sidebar. Break that down. Each team should have its own tasks. (/{org}/team/{team}/tasks) 
-- [ ] Refactor effect atom to atoms page, do team filtering client side (instead of another server request), setup optimistic updates with client side state for tasks/projects
+- [x] Refactor effect atom to atoms page, do team filtering client side (instead of another server request), setup optimistic updates with client side state for tasks/projects
   - [x] Move shared task/project atom definitions into dedicated atom modules
   - [x] Add `orgId` support to task/project/view schemas and persistence
   - [x] Refactor task routes to read from shared atom modules and filter org/team tasks client side
   - [x] Add optimistic task updates backed by client-side atom state
   - [x] Add optimistic project state primitives for upcoming project CRUD (look at tasks)
 - [x] Improve seeding by adding seed data on org creation not start. Add example projects/teams/tasks on org creation.
-- [ ] Build table view for tasks (use tanstack table)
+- [x] Build table view for tasks (use tanstack table)
 - [ ] Build board view for tasks (with dnd)
 - [ ] Setup task dynamic filters (e.g. status, priority, etc.)
 - [ ] Projects crud
@@ -71,5 +71,3 @@ Goal: Connect Github with the Effect API with two-way syncing.
 - [ ] Build Github integration
 - [ ] Build Github syncing
 - [ ] Allow linking projects to Github repos
-
-
