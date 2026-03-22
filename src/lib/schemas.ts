@@ -1,4 +1,13 @@
-import { Schema } from "effect";
+import { Schema, SchemaGetter } from "effect";
+
+// Date schema that accepts both Date objects (server/DB) and ISO strings (HTTP JSON)
+const DateFromString = Schema.Date.pipe(
+  Schema.encodeTo(Schema.String, {
+    decode: SchemaGetter.Date(),
+    encode: SchemaGetter.String(),
+  }),
+);
+export const DateFromHttp = Schema.Union([Schema.Date, DateFromString]);
 
 // Branded IDs
 export const TaskId = Schema.String.pipe(Schema.brand("TaskId"));
@@ -30,10 +39,10 @@ export const Task = Schema.Struct({
   status: TaskStatus,
   priority: TaskPriority,
   projectId: Schema.NullOr(ProjectId),
-  createdAt: Schema.Date,
-  updatedAt: Schema.Date,
-})
-export type Task = typeof Task.Type
+  createdAt: DateFromHttp,
+  updatedAt: DateFromHttp,
+});
+export type Task = typeof Task.Type;
 
 export const CreateTaskPayload = Schema.Struct({
   title: Schema.NonEmptyString,
@@ -41,8 +50,8 @@ export const CreateTaskPayload = Schema.Struct({
   status: TaskStatus,
   priority: TaskPriority,
   projectId: Schema.NullOr(ProjectId),
-})
-export type CreateTaskPayload = typeof CreateTaskPayload.Type
+});
+export type CreateTaskPayload = typeof CreateTaskPayload.Type;
 
 export const UpdateTaskPayload = Schema.Struct({
   title: Schema.optionalKey(Schema.NonEmptyString),
@@ -50,29 +59,29 @@ export const UpdateTaskPayload = Schema.Struct({
   status: Schema.optionalKey(TaskStatus),
   priority: Schema.optionalKey(TaskPriority),
   projectId: Schema.optionalKey(Schema.NullOr(ProjectId)),
-})
-export type UpdateTaskPayload = typeof UpdateTaskPayload.Type
+});
+export type UpdateTaskPayload = typeof UpdateTaskPayload.Type;
 
 export const Project = Schema.Struct({
   id: ProjectId,
   name: Schema.NonEmptyString,
   description: Schema.NullOr(Schema.String),
-  createdAt: Schema.Date,
-  updatedAt: Schema.Date,
-})
-export type Project = typeof Project.Type
+  createdAt: DateFromHttp,
+  updatedAt: DateFromHttp,
+});
+export type Project = typeof Project.Type;
 
 export const CreateProjectPayload = Schema.Struct({
   name: Schema.NonEmptyString,
   description: Schema.NullOr(Schema.String),
-})
-export type CreateProjectPayload = typeof CreateProjectPayload.Type
+});
+export type CreateProjectPayload = typeof CreateProjectPayload.Type;
 
 export const UpdateProjectPayload = Schema.Struct({
   name: Schema.optionalKey(Schema.NonEmptyString),
   description: Schema.optionalKey(Schema.NullOr(Schema.String)),
-})
-export type UpdateProjectPayload = typeof UpdateProjectPayload.Type
+});
+export type UpdateProjectPayload = typeof UpdateProjectPayload.Type;
 
 export const View = Schema.Struct({
   id: ViewId,
@@ -82,10 +91,10 @@ export const View = Schema.Struct({
     priority: Schema.NullOr(Schema.Array(TaskPriority)),
     projectId: Schema.NullOr(ProjectId),
   }),
-  createdAt: Schema.Date,
-  updatedAt: Schema.Date,
-})
-export type View = typeof View.Type
+  createdAt: DateFromHttp,
+  updatedAt: DateFromHttp,
+});
+export type View = typeof View.Type;
 
 export const CreateViewPayload = Schema.Struct({
   name: Schema.NonEmptyString,
@@ -94,8 +103,8 @@ export const CreateViewPayload = Schema.Struct({
     priority: Schema.NullOr(Schema.Array(TaskPriority)),
     projectId: Schema.NullOr(ProjectId),
   }),
-})
-export type CreateViewPayload = typeof CreateViewPayload.Type
+});
+export type CreateViewPayload = typeof CreateViewPayload.Type;
 
 export const UpdateViewPayload = Schema.Struct({
   name: Schema.optionalKey(Schema.NonEmptyString),
@@ -106,8 +115,8 @@ export const UpdateViewPayload = Schema.Struct({
       projectId: Schema.NullOr(ProjectId),
     }),
   ),
-})
-export type UpdateViewPayload = typeof UpdateViewPayload.Type
+});
+export type UpdateViewPayload = typeof UpdateViewPayload.Type;
 
 // Auth types
 export const User = Schema.Struct({
@@ -115,26 +124,26 @@ export const User = Schema.Struct({
   name: Schema.String,
   email: Schema.String,
   emailVerified: Schema.Boolean,
-  createdAt: Schema.Date,
-  updatedAt: Schema.Date,
-})
-export type User = typeof User.Type
+  createdAt: DateFromHttp,
+  updatedAt: DateFromHttp,
+});
+export type User = typeof User.Type;
 
 export const Session = Schema.Struct({
   id: Schema.String,
   userId: Schema.String,
-  expiresAt: Schema.Date,
-  createdAt: Schema.Date,
-  updatedAt: Schema.Date,
+  expiresAt: DateFromHttp,
+  createdAt: DateFromHttp,
+  updatedAt: DateFromHttp,
   token: Schema.String,
-})
-export type Session = typeof Session.Type
+});
+export type Session = typeof Session.Type;
 
 export const SessionData = Schema.Struct({
   user: User,
   session: Session,
-})
-export type SessionData = typeof SessionData.Type
+});
+export type SessionData = typeof SessionData.Type;
 
 // Error types
 export class UnauthorizedError extends Schema.TaggedErrorClass(
