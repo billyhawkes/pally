@@ -1,9 +1,12 @@
 import { Link, createFileRoute, useRouter } from "@tanstack/react-router"
-import { useState, type FormEvent } from "react"
+import { useEffect, useState, type FormEvent } from "react"
+import { Github, LoaderCircle } from "lucide-react"
 import { authClient } from "@/lib/auth-client"
+import { sanitizeRedirect } from "@/lib/auth-redirect"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Separator } from "@/components/ui/separator"
 import {
   Card,
   CardContent,
@@ -11,13 +14,6 @@ import {
   CardTitle,
   CardDescription,
 } from "@/components/ui/card"
-
-function sanitizeRedirect(url: unknown): string {
-  if (typeof url !== "string" || !url.startsWith("/") || url.startsWith("//")) {
-    return "/"
-  }
-  return url
-}
 
 export const Route = createFileRoute("/auth/login")({
   validateSearch: (search: Record<string, unknown>) => ({
@@ -31,6 +27,45 @@ function LoginPage() {
   const router = useRouter()
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
+  const [githubLoading, setGithubLoading] = useState(false)
+  const [githubAvailable, setGithubAvailable] = useState(false)
+  const [githubAvailabilityLoading, setGithubAvailabilityLoading] = useState(true)
+
+  useEffect(() => {
+    let cancelled = false
+
+    const loadProviders = async () => {
+      try {
+        const response = await fetch("/api/auth/providers")
+
+        if (!response.ok) {
+          throw new Error("Failed to load auth providers")
+        }
+
+        const data = (await response.json()) as {
+          github?: { configured?: boolean }
+        }
+
+        if (!cancelled) {
+          setGithubAvailable(Boolean(data.github?.configured))
+        }
+      } catch {
+        if (!cancelled) {
+          setGithubAvailable(false)
+        }
+      } finally {
+        if (!cancelled) {
+          setGithubAvailabilityLoading(false)
+        }
+      }
+    }
+
+    loadProviders()
+
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -57,6 +92,28 @@ function LoginPage() {
     router.navigate({ to: search.redirect })
   }
 
+  const handleGithubSignIn = async () => {
+    setError("")
+    if (!githubAvailable) {
+      setError("GitHub sign-in is not configured")
+      return
+    }
+
+    setGithubLoading(true)
+
+    const result = await authClient.signIn.social({
+      provider: "github",
+      callbackURL: search.redirect,
+      newUserCallbackURL: search.redirect,
+    })
+
+    setGithubLoading(false)
+
+    if (result.error) {
+      setError(result.error.message ?? "Failed to sign in with GitHub")
+    }
+  }
+
   return (
     <div className="flex min-h-screen items-center justify-center p-4">
       <Card className="w-full max-w-sm">
@@ -67,7 +124,33 @@ function LoginPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-4">
+            {githubAvailabilityLoading || githubAvailable ? (
+              <>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full"
+                  disabled={loading || githubLoading || githubAvailabilityLoading}
+                  onClick={handleGithubSignIn}
+                >
+                  {githubLoading || githubAvailabilityLoading ? (
+                    <LoaderCircle className="mr-2 size-4 animate-spin" />
+                  ) : (
+                    <Github className="mr-2 size-4" />
+                  )}
+                  Sign in with GitHub
+                </Button>
+                <div className="flex items-center gap-3">
+                  <Separator className="flex-1" />
+                  <span className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
+                    Or continue with email
+                  </span>
+                  <Separator className="flex-1" />
+                </div>
+              </>
+            ) : null}
+            <form onSubmit={handleSubmit} className="space-y-4">
             {error && <p className="text-sm text-destructive">{error}</p>}
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
@@ -96,12 +179,14 @@ function LoginPage() {
               Don&apos;t have an account?{" "}
               <Link
                 to="/auth/signup"
+                search={{ redirect: search.redirect }}
                 className="text-primary underline-offset-4 hover:underline"
               >
                 Sign up
               </Link>
             </p>
-          </form>
+            </form>
+          </div>
         </CardContent>
       </Card>
     </div>

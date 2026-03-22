@@ -17,6 +17,7 @@ import { Route as AuthCreateOrganizationRouteImport } from './routes/auth/create
 import { Route as ApiSplatRouteImport } from './routes/api/$'
 import { Route as OrgOrgSlugIndexRouteImport } from './routes/org/$orgSlug/index'
 import { Route as OrgOrgSlugProjectsRouteImport } from './routes/org/$orgSlug/projects'
+import { Route as ApiAuthProvidersRouteImport } from './routes/api/auth/providers'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth.$'
 import { Route as OrgOrgSlugTasksIndexRouteImport } from './routes/org/$orgSlug/tasks.index'
 import { Route as OrgOrgSlugProjectsIndexRouteImport } from './routes/org/$orgSlug/projects.index'
@@ -66,6 +67,11 @@ const OrgOrgSlugProjectsRoute = OrgOrgSlugProjectsRouteImport.update({
   id: '/projects',
   path: '/projects',
   getParentRoute: () => OrgOrgSlugRoute,
+} as any)
+const ApiAuthProvidersRoute = ApiAuthProvidersRouteImport.update({
+  id: '/api/auth/providers',
+  path: '/api/auth/providers',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   id: '/api/auth/$',
@@ -126,6 +132,7 @@ export interface FileRoutesByFullPath {
   '/auth/signup': typeof AuthSignupRoute
   '/org/$orgSlug': typeof OrgOrgSlugRouteWithChildren
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/auth/providers': typeof ApiAuthProvidersRoute
   '/org/$orgSlug/projects': typeof OrgOrgSlugProjectsRouteWithChildren
   '/org/$orgSlug/': typeof OrgOrgSlugIndexRoute
   '/org/$orgSlug/team/$teamSlug': typeof OrgOrgSlugTeamTeamSlugRouteWithChildren
@@ -144,6 +151,7 @@ export interface FileRoutesByTo {
   '/auth/login': typeof AuthLoginRoute
   '/auth/signup': typeof AuthSignupRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/auth/providers': typeof ApiAuthProvidersRoute
   '/org/$orgSlug': typeof OrgOrgSlugIndexRoute
   '/org/$orgSlug/team/$teamSlug': typeof OrgOrgSlugTeamTeamSlugRouteWithChildren
   '/org/$orgSlug/projects': typeof OrgOrgSlugProjectsIndexRoute
@@ -162,6 +170,7 @@ export interface FileRoutesById {
   '/auth/signup': typeof AuthSignupRoute
   '/org/$orgSlug': typeof OrgOrgSlugRouteWithChildren
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/auth/providers': typeof ApiAuthProvidersRoute
   '/org/$orgSlug/projects': typeof OrgOrgSlugProjectsRouteWithChildren
   '/org/$orgSlug/': typeof OrgOrgSlugIndexRoute
   '/org/$orgSlug/team/$teamSlug': typeof OrgOrgSlugTeamTeamSlugRouteWithChildren
@@ -183,6 +192,7 @@ export interface FileRouteTypes {
     | '/auth/signup'
     | '/org/$orgSlug'
     | '/api/auth/$'
+    | '/api/auth/providers'
     | '/org/$orgSlug/projects'
     | '/org/$orgSlug/'
     | '/org/$orgSlug/team/$teamSlug'
@@ -201,6 +211,7 @@ export interface FileRouteTypes {
     | '/auth/login'
     | '/auth/signup'
     | '/api/auth/$'
+    | '/api/auth/providers'
     | '/org/$orgSlug'
     | '/org/$orgSlug/team/$teamSlug'
     | '/org/$orgSlug/projects'
@@ -218,6 +229,7 @@ export interface FileRouteTypes {
     | '/auth/signup'
     | '/org/$orgSlug'
     | '/api/auth/$'
+    | '/api/auth/providers'
     | '/org/$orgSlug/projects'
     | '/org/$orgSlug/'
     | '/org/$orgSlug/team/$teamSlug'
@@ -238,6 +250,7 @@ export interface RootRouteChildren {
   AuthSignupRoute: typeof AuthSignupRoute
   OrgOrgSlugRoute: typeof OrgOrgSlugRouteWithChildren
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
+  ApiAuthProvidersRoute: typeof ApiAuthProvidersRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -297,6 +310,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/org/$orgSlug/projects'
       preLoaderRoute: typeof OrgOrgSlugProjectsRouteImport
       parentRoute: typeof OrgOrgSlugRoute
+    }
+    '/api/auth/providers': {
+      id: '/api/auth/providers'
+      path: '/api/auth/providers'
+      fullPath: '/api/auth/providers'
+      preLoaderRoute: typeof ApiAuthProvidersRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/api/auth/$': {
       id: '/api/auth/$'
@@ -438,6 +458,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthSignupRoute: AuthSignupRoute,
   OrgOrgSlugRoute: OrgOrgSlugRouteWithChildren,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
+  ApiAuthProvidersRoute: ApiAuthProvidersRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

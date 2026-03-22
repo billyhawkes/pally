@@ -173,6 +173,16 @@ export const Team = Schema.Struct({
 });
 export type Team = typeof Team.Type;
 
+export const GithubIntegration = Schema.Struct({
+  provider: Schema.Literal("github"),
+  providerConfigured: Schema.Boolean,
+  connected: Schema.Boolean,
+  accountId: Schema.NullOr(Schema.String),
+  scope: Schema.NullOr(Schema.String),
+  connectedAt: Schema.NullOr(DateFromHttp),
+});
+export type GithubIntegration = typeof GithubIntegration.Type;
+
 // Error types
 export class UnauthorizedError extends Schema.TaggedErrorClass(
   "UnauthorizedError",

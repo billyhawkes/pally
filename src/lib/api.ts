@@ -10,6 +10,7 @@ import {
   CreateProjectPayload,
   CreateTaskPayload,
   CreateViewPayload,
+  GithubIntegration,
   Organization,
   OrganizationId,
   Project,
@@ -220,6 +221,19 @@ const teamsGroup = HttpApiGroup.make("teams")
   .add(listTeams)
   .middleware(Authentication);
 
+// GitHub endpoints
+const getGithubIntegration = HttpApiEndpoint.get(
+  "getGithubIntegration",
+  "/github/integration",
+  {
+    success: GithubIntegration,
+  },
+);
+
+const githubGroup = HttpApiGroup.make("github")
+  .add(getGithubIntegration)
+  .middleware(Authentication);
+
 // Main API
 export const PallyApi = HttpApi.make("PallyApi")
   .add(tasksGroup)
@@ -227,4 +241,5 @@ export const PallyApi = HttpApi.make("PallyApi")
   .add(viewsGroup)
   .add(organizationsGroup)
   .add(teamsGroup)
+  .add(githubGroup)
   .prefix("/api");

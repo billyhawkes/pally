@@ -10,6 +10,8 @@ import {
   FolderKanban,
   Users,
   Plus,
+  Github,
+  LoaderCircle,
 } from "lucide-react";
 
 import {
@@ -39,6 +41,7 @@ import { CreateTeamDialog } from "@/components/teams/create-team-dialog";
 import { Button } from "@/components/ui/button";
 import { authClient } from "@/lib/auth-client";
 import type { AuthState } from "@/lib/auth-context";
+import { githubIntegrationAtom } from "@/lib/atoms/github";
 import { organizationsAtom } from "@/lib/atoms/organizations";
 import { teamsAtom } from "@/lib/atoms/teams";
 import { isTaskViewMode } from "@/components/tasks/task-views";
@@ -102,6 +105,7 @@ export function AppSidebar({
 
   const orgsResult = useAtomValue(organizationsAtom);
   const organizations = orgsResult._tag === "Success" ? orgsResult.value : [];
+  const githubIntegrationResult = useAtomValue(githubIntegrationAtom);
 
   const activeOrg = currentOrgSlug
     ? (organizations.find((o) => o.slug === currentOrgSlug) ?? null)
@@ -111,6 +115,20 @@ export function AppSidebar({
   const teams = teamsResult._tag === "Success" ? teamsResult.value : [];
 
   const [showCreateTeam, setShowCreateTeam] = useState(false);
+  const [isGithubSubmitting, setIsGithubSubmitting] = useState(false);
+  const [githubConnectedOverride, setGithubConnectedOverride] = useState<
+    boolean | null
+  >(null);
+
+  const githubIntegration =
+    githubIntegrationResult._tag === "Success"
+      ? githubIntegrationResult.value
+      : null;
+  const isGithubLoading =
+    githubConnectedOverride === null && githubIntegrationResult._tag !== "Success";
+  const isGithubConfigured = githubIntegration?.providerConfigured ?? false;
+  const isGithubConnected =
+    githubConnectedOverride ?? githubIntegration?.connected ?? false;
 
   async function handleSetActiveOrg(
     org: { id: string; slug: string | null } | null,
@@ -129,6 +147,29 @@ export function AppSidebar({
   async function handleSignOut() {
     await authClient.signOut();
     router.navigate({ to: "/auth/login", search: { redirect: "/" } });
+  }
+
+  async function handleGithubConnectionToggle() {
+    setIsGithubSubmitting(true);
+
+    try {
+      if (!isGithubConfigured) {
+        return;
+      }
+
+      if (isGithubConnected) {
+        await authClient.unlinkAccount({ providerId: "github" });
+        setGithubConnectedOverride(false);
+        return;
+      }
+
+      await authClient.linkSocial({
+        provider: "github",
+        callbackURL: `${window.location.pathname}${window.location.search}`,
+      });
+    } finally {
+      setIsGithubSubmitting(false);
+    }
   }
 
   const userInitials = auth.user.name
@@ -345,6 +386,35 @@ export function AppSidebar({
                 align="start"
                 className="w-[--radix-dropdown-menu-trigger-width]"
               >
+                <DropdownMenuItem disabled>
+                  <Github className="mr-2 size-4" />
+                  {isGithubLoading
+                    ? "Checking GitHub account"
+                    : !isGithubConfigured
+                      ? "GitHub not configured"
+                    : isGithubConnected
+                      ? "GitHub account connected"
+                      : "GitHub account not connected"}
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  disabled={isGithubLoading || isGithubSubmitting || !isGithubConfigured}
+                  onClick={handleGithubConnectionToggle}
+                >
+                  {isGithubSubmitting ? (
+                    <LoaderCircle className="mr-2 size-4 animate-spin" />
+                  ) : (
+                    <Github className="mr-2 size-4" />
+                  )}
+                  {isGithubSubmitting
+                    ? isGithubConnected
+                      ? "Disconnecting account..."
+                      : "Connecting account..."
+                    : !isGithubConfigured
+                      ? "Add GitHub OAuth env vars"
+                    : isGithubConnected
+                      ? "Disconnect GitHub account"
+                      : "Connect GitHub account"}
+                </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleSignOut}>
                   <LogOut className="mr-2 size-4" />

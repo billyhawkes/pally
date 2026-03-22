@@ -34,7 +34,9 @@ function HomePage() {
           </Link>
         </Button>
         <Button variant="outline" asChild>
-          <Link to="/auth/signup">Create account</Link>
+          <Link to="/auth/signup" search={{ redirect: "/" }}>
+            Create account
+          </Link>
         </Button>
       </div>
     </div>

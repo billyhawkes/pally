@@ -64,14 +64,13 @@ Goal: Connect TanStack DB to the Effect API and display data in the UI.
 - [x] Create task popup form (try to use the effect schema and atom for state)
 - [x] Setup task dynamic filters (e.g. status, priority, etc.)
 - [x] Projects crud
-- [ ] Command palette with all actions
+- [x] Command palette with all actions
 
 ## Phase 6: Github Integration
 Goal: Connect Github with the Effect API with two-way syncing.
 
-- [ ] Build Github integration
-- [ ] Build Github syncing
-- [ ] Allow linking projects to Github repos
+- [x] Build Github integration
+- [ ] Build two-way Github repository issue syncing
 
 ## Phase 7: New features
 - [ ] Task types (eg. bug, feature, chore, etc.)

@@ -5,6 +5,9 @@ import { tanstackStartCookies } from "better-auth/tanstack-start";
 import { db } from "@/db/layer";
 import { seedOrganizationData } from "@/db/seed";
 
+const githubClientId = process.env.GITHUB_CLIENT_ID;
+const githubClientSecret = process.env.GITHUB_CLIENT_SECRET;
+
 export const auth = betterAuth({
   database: drizzleAdapter(db, {
     provider: "pg",
@@ -12,6 +15,16 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
   },
+  socialProviders:
+    githubClientId && githubClientSecret
+      ? {
+          github: {
+            clientId: githubClientId,
+            clientSecret: githubClientSecret,
+            scope: ["read:user", "user:email"],
+          },
+        }
+      : undefined,
   plugins: [
     organization({
       allowUserToCreateOrganization: true,

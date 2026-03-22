@@ -9,6 +9,7 @@ import {
   OrganizationService,
   TeamService,
   AuthService,
+  GithubService,
 } from "./services/index";
 import { DBLive } from "@/db/layer";
 
@@ -150,6 +151,17 @@ const teamsGroupLive = HttpApiBuilder.group(PallyApi, "teams", (handlers) =>
   ),
 );
 
+// GitHub group implementation
+const githubGroupLive = HttpApiBuilder.group(PallyApi, "github", (handlers) =>
+  handlers.handle("getGithubIntegration", () =>
+    Effect.gen(function* () {
+      const session = yield* CurrentSession;
+      const githubService = yield* GithubService;
+      return yield* githubService.getIntegration(session.user.id);
+    }),
+  ),
+);
+
 // Compose all layers
 const authLayer = AuthenticationLive.pipe(Layer.provide(AuthService.layer));
 
@@ -161,11 +173,13 @@ export const apiLayer = HttpApiBuilder.layer(PallyApi, {
   Layer.provide(viewsGroupLive),
   Layer.provide(organizationsGroupLive),
   Layer.provide(teamsGroupLive),
+  Layer.provide(githubGroupLive),
   Layer.provide(authLayer),
   Layer.provide(TaskService.layer),
   Layer.provide(ProjectService.layer),
   Layer.provide(ViewService.layer),
   Layer.provide(OrganizationService.layer),
   Layer.provide(TeamService.layer),
+  Layer.provide(GithubService.layer),
   Layer.provide(DBLive),
 );
