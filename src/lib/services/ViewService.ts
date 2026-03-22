@@ -38,7 +38,7 @@ export class ViewService extends ServiceMap.Service<
           db.select().from(views).where(eq(views.id, id as string)).limit(1)
         )
         if (rows.length === 0) {
-          return yield* Effect.fail(new ViewNotFoundError({ id }))
+          return yield* new ViewNotFoundError({ id })
         }
         return decodeView(rows[0]!)
       })

@@ -82,7 +82,7 @@ export class TaskService extends ServiceMap.Service<
             .limit(1),
         );
         if (rows.length === 0) {
-          return yield* Effect.fail(new TaskNotFoundError({ id }));
+          return yield* new TaskNotFoundError({ id });
         }
         return decodeTask(rows[0]!);
       });

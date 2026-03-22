@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { Link, useRouter, useParams } from "@tanstack/react-router";
 import { useAtomValue } from "@effect/atom-react";
 import {
@@ -44,6 +44,13 @@ const organizationsAtom = PallyClient.query(
   { timeToLive: "5 minutes", reactivityKeys: ["organizations"] },
 );
 
+const teamsAtom = (orgId: string) =>
+  PallyClient.query("teams", "listTeams", {
+    query: { organizationId: orgId },
+    timeToLive: "5 minutes",
+    reactivityKeys: ["teams"],
+  });
+
 export function AppSidebar({
   auth,
 }: {
@@ -54,27 +61,14 @@ export function AppSidebar({
   const currentOrgSlug = params.orgSlug;
 
   const orgsResult = useAtomValue(organizationsAtom);
-  const organizations =
-    orgsResult._tag === "Success" ? orgsResult.value : [];
+  const organizations = orgsResult._tag === "Success" ? orgsResult.value : [];
 
   const activeOrg =
     currentOrgSlug && currentOrgSlug !== "personal"
-      ? organizations.find((o) => o.slug === currentOrgSlug) ?? null
+      ? (organizations.find((o) => o.slug === currentOrgSlug) ?? null)
       : null;
 
-  const teamsAtom = useMemo(
-    () =>
-      activeOrg
-        ? PallyClient.query("teams", "listTeams", {
-            query: { organizationId: activeOrg.id },
-            timeToLive: "5 minutes",
-            reactivityKeys: ["teams"],
-          })
-        : null,
-    [activeOrg?.id],
-  );
-
-  const teamsResult = teamsAtom ? useAtomValue(teamsAtom) : null;
+  const teamsResult = useAtomValue(teamsAtom(activeOrg?.id ?? ""));
   const teams = teamsResult?._tag === "Success" ? teamsResult.value : [];
 
   const [showCreateTeam, setShowCreateTeam] = useState(false);
@@ -91,7 +85,9 @@ export function AppSidebar({
     setShowCreateTeam(false);
   }
 
-  async function handleSetActiveOrg(org: { id: string; slug: string | null } | null) {
+  async function handleSetActiveOrg(
+    org: { id: string; slug: string | null } | null,
+  ) {
     await authClient.organization.setActive({
       organizationId: org?.id ?? null,
     });

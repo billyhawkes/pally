@@ -4,6 +4,19 @@ import { Organization } from "@/lib/schemas";
 import { DB } from "@/db/layer";
 import { dbQuery } from "@/db/query";
 import { organization, member } from "@/db/auth-schema";
+import { authClient } from "@/lib/auth-client";
+
+export async function resolveOrgBySlug({ data: slug }: { data: string }) {
+  const { data: orgs } = await authClient.organization.list()
+  const org = orgs?.find((o) => o.slug === slug)
+  if (!org) return { type: "not_found" as const }
+  return { type: "found" as const, data: org }
+}
+
+export async function getFirstOrgSlug() {
+  const { data: orgs } = await authClient.organization.list()
+  return orgs?.[0]?.slug ?? null
+}
 
 const decodeOrganization = Schema.decodeUnknownSync(Organization);
 

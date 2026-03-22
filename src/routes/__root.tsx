@@ -2,11 +2,11 @@ import {
   HeadContent,
   Scripts,
   createRootRouteWithContext,
-} from "@tanstack/react-router"
-import { RegistryProvider } from "@effect/atom-react"
-import { AuthProvider } from "@/lib/auth-context"
+} from "@tanstack/react-router";
+import { RegistryProvider } from "@effect/atom-react";
+import { AuthProvider } from "@/lib/auth-context";
 
-import appCss from "@/styles.css?url"
+import appCss from "@/styles.css?url";
 
 export const Route = createRootRouteWithContext()({
   head: () => ({
@@ -17,8 +17,9 @@ export const Route = createRootRouteWithContext()({
     ],
     links: [{ rel: "stylesheet", href: appCss }],
   }),
+  ssr: false,
   shellComponent: RootDocument,
-})
+});
 
 function RootDocument({ children }: { children: React.ReactNode }) {
   return (
@@ -33,5 +34,5 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <Scripts />
       </body>
     </html>
-  )
+  );
 }

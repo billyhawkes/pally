@@ -1,7 +1,7 @@
 import { createFileRoute, redirect } from "@tanstack/react-router"
 import { Button } from "@/components/ui/button"
-import { getSession } from "@/lib/get-session"
-import { getFirstOrgSlug } from "@/lib/resolve-org"
+import { getSession } from "@/lib/services/AuthService"
+import { getFirstOrgSlug } from "@/lib/services/OrganizationService"
 
 export const Route = createFileRoute("/")({
   beforeLoad: async () => {

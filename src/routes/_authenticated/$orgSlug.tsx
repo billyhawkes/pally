@@ -1,5 +1,5 @@
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router"
-import { resolveOrgBySlug } from "@/lib/resolve-org"
+import { resolveOrgBySlug } from "@/lib/services/OrganizationService"
 
 export const Route = createFileRoute("/_authenticated/$orgSlug")({
   beforeLoad: async ({ params }) => {

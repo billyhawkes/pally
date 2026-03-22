@@ -1,6 +1,12 @@
 import { Effect, Layer, ServiceMap } from "effect"
 import { auth } from "@/lib/auth"
+import { authClient } from "@/lib/auth-client"
 import { UnauthorizedError } from "@/lib/schemas"
+
+export async function getSession() {
+  const { data } = await authClient.getSession()
+  return data ?? null
+}
 
 type AuthSession = {
   user: {

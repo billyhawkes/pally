@@ -38,7 +38,7 @@ export class ProjectService extends ServiceMap.Service<
           db.select().from(projects).where(eq(projects.id, id as string)).limit(1)
         )
         if (rows.length === 0) {
-          return yield* Effect.fail(new ProjectNotFoundError({ id }))
+          return yield* new ProjectNotFoundError({ id })
         }
         return decodeProject(rows[0]!)
       })
