@@ -1,4 +1,4 @@
-import { createFileRoute, useRouter } from "@tanstack/react-router"
+import { Link, createFileRoute, useRouter } from "@tanstack/react-router"
 import { useState, type FormEvent } from "react"
 import { authClient } from "@/lib/auth-client"
 import { Button } from "@/components/ui/button"
@@ -94,12 +94,12 @@ function LoginPage() {
             </Button>
             <p className="text-center text-sm text-muted-foreground">
               Don&apos;t have an account?{" "}
-              <a
-                href="/signup"
+              <Link
+                to="/auth/signup"
                 className="text-primary underline-offset-4 hover:underline"
               >
                 Sign up
-              </a>
+              </Link>
             </p>
           </form>
         </CardContent>

@@ -98,7 +98,7 @@ export function AppSidebar({
 
   async function handleSignOut() {
     await authClient.signOut();
-    router.navigate({ to: "/login", search: { redirect: "/" } });
+    router.navigate({ to: "/auth/login", search: { redirect: "/" } });
   }
 
   const userInitials = auth.user.name
@@ -153,10 +153,10 @@ export function AppSidebar({
                 ))}
                 {organizations.length > 0 && <DropdownMenuSeparator />}
                 <DropdownMenuItem asChild>
-                  <a href="/create-organization">
+                  <Link to="/auth/create-organization">
                     <Plus className="mr-2 size-4" />
                     Create organization
-                  </a>
+                  </Link>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>

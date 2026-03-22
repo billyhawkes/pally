@@ -17,7 +17,7 @@ export const Route = createFileRoute("/auth/create-organization")({
   beforeLoad: async () => {
     const session = await getSession();
     if (!session) {
-      throw redirect({ to: "/login", search: { redirect: "/" } });
+      throw redirect({ to: "/auth/login", search: { redirect: "/" } });
     }
   },
   component: CreateOrganizationPage,

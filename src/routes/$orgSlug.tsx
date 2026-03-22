@@ -4,19 +4,21 @@ import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 
 export const Route = createFileRoute("/$orgSlug")({
-  beforeLoad: async ({ params }) => {
+  beforeLoad: async ({ params, location }) => {
     console.log("params", params);
     const session = await getSession();
     if (!session) {
       throw redirect({
-        to: "/login",
-        search: { redirect: location.href },
+        to: "/auth/login",
+        search: {
+          redirect: `${location.pathname}${location.search}${location.hash}`,
+        },
       });
     }
     const result = await resolveOrgBySlug({ data: params.orgSlug });
 
     if (result.type === "not_found") {
-      throw redirect({ to: "/create-organization" });
+      throw redirect({ to: "/auth/create-organization" });
     }
 
     return { orgSlug: params.orgSlug, auth: session };
@@ -25,7 +27,7 @@ export const Route = createFileRoute("/$orgSlug")({
 });
 
 function OrgSlugLayout() {
-  const { orgSlug, auth } = Route.useRouteContext();
+  const { auth } = Route.useRouteContext();
 
   return (
     <SidebarProvider>

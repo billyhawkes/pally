@@ -1,4 +1,4 @@
-import { createFileRoute, useRouter } from "@tanstack/react-router";
+import { Link, createFileRoute, useRouter } from "@tanstack/react-router";
 import { useState, type FormEvent } from "react";
 import { authClient } from "@/lib/auth-client";
 import { Button } from "@/components/ui/button";
@@ -114,12 +114,13 @@ function SignupPage() {
             </Button>
             <p className="text-center text-sm text-muted-foreground">
               Already have an account?{" "}
-              <a
-                href="/login"
+              <Link
+                to="/auth/login"
+                search={{ redirect: "/" }}
                 className="text-primary underline-offset-4 hover:underline"
               >
                 Sign in
-              </a>
+              </Link>
             </p>
           </form>
         </CardContent>

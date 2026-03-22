@@ -1,4 +1,4 @@
-import { createFileRoute, redirect } from "@tanstack/react-router";
+import { Link, createFileRoute, redirect } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { getSession, getFirstOrgSlug } from "@/lib/client-auth";
 
@@ -13,7 +13,7 @@ export const Route = createFileRoute("/")({
           params: { orgSlug: slug },
         });
       }
-      throw redirect({ to: "/create-organization" });
+        throw redirect({ to: "/auth/create-organization" });
     }
   },
   component: HomePage,
@@ -28,10 +28,12 @@ function HomePage() {
       </p>
       <div className="flex gap-3">
         <Button asChild>
-          <a href="/login">Sign in</a>
+          <Link to="/auth/login" search={{ redirect: "/" }}>
+            Sign in
+          </Link>
         </Button>
         <Button variant="outline" asChild>
-          <a href="/signup">Create account</a>
+          <Link to="/auth/signup">Create account</Link>
         </Button>
       </div>
     </div>
