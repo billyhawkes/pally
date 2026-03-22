@@ -1,4 +1,5 @@
 import { HeadContent, Scripts, createRootRoute } from "@tanstack/react-router";
+import { RegistryProvider } from "@effect/atom-react";
 
 import appCss from "@/styles.css?url";
 
@@ -23,7 +24,9 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <HeadContent />
       </head>
       <body className="min-h-screen bg-background font-sans antialiased">
-        {children}
+        <RegistryProvider>
+          {children}
+        </RegistryProvider>
         <Scripts />
       </body>
     </html>

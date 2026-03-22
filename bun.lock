@@ -5,6 +5,7 @@
     "": {
       "name": "pally",
       "dependencies": {
+        "@effect/atom-react": "^4.0.0-beta.36",
         "@effect/platform-bun": "^4.0.0-beta.36",
         "@effect/sql-pg": "^4.0.0-beta.36",
         "@fontsource-variable/geist": "^5.2.8",
@@ -159,6 +160,8 @@
     "@drizzle-team/brocli": ["@drizzle-team/brocli@0.11.0", "", {}, "sha512-hD3pekGiPg0WPCCGAZmusBBJsDqGUR66Y452YgQsZOnkdQ7ViEPKuyP4huUGEZQefp8g34RRodXYmJ2TbCH+tg=="],
 
     "@ecies/ciphers": ["@ecies/ciphers@0.2.5", "", { "peerDependencies": { "@noble/ciphers": "^1.0.0" } }, "sha512-GalEZH4JgOMHYYcYmVqnFirFsjZHeoGMDt9IxEnM9F7GRUUyUksJ7Ou53L83WHJq3RWKD3AcBpo0iQh0oMpf8A=="],
+
+    "@effect/atom-react": ["@effect/atom-react@4.0.0-beta.36", "", { "peerDependencies": { "effect": "^4.0.0-beta.36", "react": "^19.2.4", "scheduler": "*" } }, "sha512-JqXzvPuUvzdcQXiDCG+zCOUsDc89W4uQ4MajpNu9L0DDC4rg6sKkaKhs9JYo3y4XHJWg9Lv38AjeqoRji8+85w=="],
 
     "@effect/language-service": ["@effect/language-service@0.81.0", "", { "bin": { "effect-language-service": "cli.js" } }, "sha512-7MYFsq9w9l2MkUw5/33fiG3YAkgnT6U1mwV0QvhokhnLhPW9cIetwAHNtXwsgr5omPQheLuflTIAFvPaZLQcPw=="],
 

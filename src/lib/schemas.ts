@@ -26,10 +26,10 @@ export type TaskPriority = typeof TaskPriority.Type;
 export const Task = Schema.Struct({
   id: TaskId,
   title: Schema.NonEmptyString,
-  description: Schema.Option(Schema.String),
+  description: Schema.NullOr(Schema.String),
   status: TaskStatus,
   priority: TaskPriority,
-  projectId: Schema.Option(ProjectId),
+  projectId: Schema.NullOr(ProjectId),
   createdAt: Schema.Date,
   updatedAt: Schema.Date,
 })
@@ -37,26 +37,26 @@ export type Task = typeof Task.Type
 
 export const CreateTaskPayload = Schema.Struct({
   title: Schema.NonEmptyString,
-  description: Schema.Option(Schema.String),
+  description: Schema.NullOr(Schema.String),
   status: TaskStatus,
   priority: TaskPriority,
-  projectId: Schema.Option(ProjectId),
+  projectId: Schema.NullOr(ProjectId),
 })
 export type CreateTaskPayload = typeof CreateTaskPayload.Type
 
 export const UpdateTaskPayload = Schema.Struct({
   title: Schema.optionalKey(Schema.NonEmptyString),
-  description: Schema.optionalKey(Schema.Option(Schema.String)),
+  description: Schema.optionalKey(Schema.NullOr(Schema.String)),
   status: Schema.optionalKey(TaskStatus),
   priority: Schema.optionalKey(TaskPriority),
-  projectId: Schema.optionalKey(Schema.Option(ProjectId)),
+  projectId: Schema.optionalKey(Schema.NullOr(ProjectId)),
 })
 export type UpdateTaskPayload = typeof UpdateTaskPayload.Type
 
 export const Project = Schema.Struct({
   id: ProjectId,
   name: Schema.NonEmptyString,
-  description: Schema.Option(Schema.String),
+  description: Schema.NullOr(Schema.String),
   createdAt: Schema.Date,
   updatedAt: Schema.Date,
 })
@@ -64,13 +64,13 @@ export type Project = typeof Project.Type
 
 export const CreateProjectPayload = Schema.Struct({
   name: Schema.NonEmptyString,
-  description: Schema.Option(Schema.String),
+  description: Schema.NullOr(Schema.String),
 })
 export type CreateProjectPayload = typeof CreateProjectPayload.Type
 
 export const UpdateProjectPayload = Schema.Struct({
   name: Schema.optionalKey(Schema.NonEmptyString),
-  description: Schema.optionalKey(Schema.Option(Schema.String)),
+  description: Schema.optionalKey(Schema.NullOr(Schema.String)),
 })
 export type UpdateProjectPayload = typeof UpdateProjectPayload.Type
 
@@ -78,9 +78,9 @@ export const View = Schema.Struct({
   id: ViewId,
   name: Schema.NonEmptyString,
   filters: Schema.Struct({
-    status: Schema.Option(Schema.Array(TaskStatus)),
-    priority: Schema.Option(Schema.Array(TaskPriority)),
-    projectId: Schema.Option(ProjectId),
+    status: Schema.NullOr(Schema.Array(TaskStatus)),
+    priority: Schema.NullOr(Schema.Array(TaskPriority)),
+    projectId: Schema.NullOr(ProjectId),
   }),
   createdAt: Schema.Date,
   updatedAt: Schema.Date,
@@ -90,9 +90,9 @@ export type View = typeof View.Type
 export const CreateViewPayload = Schema.Struct({
   name: Schema.NonEmptyString,
   filters: Schema.Struct({
-    status: Schema.Option(Schema.Array(TaskStatus)),
-    priority: Schema.Option(Schema.Array(TaskPriority)),
-    projectId: Schema.Option(ProjectId),
+    status: Schema.NullOr(Schema.Array(TaskStatus)),
+    priority: Schema.NullOr(Schema.Array(TaskPriority)),
+    projectId: Schema.NullOr(ProjectId),
   }),
 })
 export type CreateViewPayload = typeof CreateViewPayload.Type
@@ -101,9 +101,9 @@ export const UpdateViewPayload = Schema.Struct({
   name: Schema.optionalKey(Schema.NonEmptyString),
   filters: Schema.optionalKey(
     Schema.Struct({
-      status: Schema.Option(Schema.Array(TaskStatus)),
-      priority: Schema.Option(Schema.Array(TaskPriority)),
-      projectId: Schema.Option(ProjectId),
+      status: Schema.NullOr(Schema.Array(TaskStatus)),
+      priority: Schema.NullOr(Schema.Array(TaskPriority)),
+      projectId: Schema.NullOr(ProjectId),
     }),
   ),
 })

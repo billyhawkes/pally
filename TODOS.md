@@ -47,7 +47,7 @@ Goal: Set up authentication with Better Auth integrated via Effect and drizzle.
 Goal: Connect TanStack DB to the Effect API and display data in the UI.
 
 - [x] Setup shadcn
-- [ ] Create TanStack DB collections calling Effect API via RPC
+- [x] Create Effect Atom HttpApi client (replaces TanStack DB)
 - [ ] Build list/board view components for tasks
 - [ ] Build sidebar navigation with Better Auth teams/organizations
 - [ ] Build login/logout UI

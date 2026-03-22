@@ -1,17 +1,17 @@
-import { Clock, Effect, Layer, Option, ServiceMap } from "effect"
+import { Clock, Effect, Layer, Schema, ServiceMap } from "effect"
 import { eq } from "drizzle-orm"
 import {
   CreateViewPayload,
-  ProjectId,
   UpdateViewPayload,
   View,
   ViewId,
   ViewNotFoundError,
 } from "@/lib/schemas"
-import type { TaskPriority, TaskStatus } from "@/lib/schemas"
 import { DB } from "@/db/layer"
 import { dbQuery } from "@/db/query"
 import { views } from "@/db/schema"
+
+const decodeView = Schema.decodeUnknownSync(View)
 
 export class ViewService extends ServiceMap.Service<
   ViewService,
@@ -30,7 +30,7 @@ export class ViewService extends ServiceMap.Service<
 
       const list = Effect.fn("ViewService.list")(function* () {
         const rows = yield* dbQuery(db.select().from(views))
-        return rows.map(toView)
+        return rows.map((row) => decodeView(row))
       })
 
       const findById = Effect.fn("ViewService.findById")(function* (id: ViewId) {
@@ -40,31 +40,30 @@ export class ViewService extends ServiceMap.Service<
         if (rows.length === 0) {
           return yield* Effect.fail(new ViewNotFoundError({ id }))
         }
-        return toView(rows[0]!)
+        return decodeView(rows[0]!)
       })
 
       const create = Effect.fn("ViewService.create")(function* (payload: CreateViewPayload) {
         const now = yield* Clock.currentTimeMillis
         const id = `view-${now}-${Math.random().toString(36).slice(2, 7)}`
-        const filtersJson = {
-          status: Option.getOrNull(payload.filters.status) as string[] | null,
-          priority: Option.getOrNull(payload.filters.priority) as string[] | null,
-          projectId: Option.getOrNull(payload.filters.projectId) as string | null,
-        }
         yield* dbQuery(
           db.insert(views).values({
             id,
             name: payload.name,
-            filters: filtersJson,
+            filters: {
+              status: payload.filters.status,
+              priority: payload.filters.priority,
+              projectId: payload.filters.projectId,
+            },
           })
         )
-        return {
-          id: ViewId.makeUnsafe(id),
+        return decodeView({
+          id,
           name: payload.name,
           filters: payload.filters,
           createdAt: new Date(now),
           updatedAt: new Date(now),
-        } satisfies View
+        })
       })
 
       const update = Effect.fn("ViewService.update")(
@@ -73,13 +72,13 @@ export class ViewService extends ServiceMap.Service<
           const now = yield* Clock.currentTimeMillis
 
           const setValues: Record<string, unknown> = { updatedAt: new Date(now) }
-          if ("name" in payload) setValues.name = payload.name as string
+          if ("name" in payload) setValues.name = payload.name
           if ("filters" in payload) {
-            const f = payload.filters as View["filters"]
+            const f = payload.filters!
             setValues.filters = {
-              status: Option.getOrNull(f.status) as string[] | null,
-              priority: Option.getOrNull(f.priority) as string[] | null,
-              projectId: Option.getOrNull(f.projectId) as string | null,
+              status: f.status ?? null,
+              priority: f.priority ?? null,
+              projectId: f.projectId ?? null,
             }
           }
 
@@ -87,18 +86,19 @@ export class ViewService extends ServiceMap.Service<
             db.update(views).set(setValues).where(eq(views.id, id as string))
           )
 
-          type Filters = {
-            status: Option.Option<readonly TaskStatus[]>
-            priority: Option.Option<readonly TaskPriority[]>
-            projectId: Option.Option<ProjectId>
-          }
-          return {
+          return decodeView({
             id: existing.id,
-            name: "name" in payload ? (payload.name as string) : existing.name,
-            filters: "filters" in payload ? (payload.filters as Filters) : existing.filters,
+            name: "name" in payload ? payload.name : existing.name,
+            filters: "filters" in payload
+              ? {
+                  status: payload.filters!.status ?? null,
+                  priority: payload.filters!.priority ?? null,
+                  projectId: payload.filters!.projectId ?? null,
+                }
+              : existing.filters,
             createdAt: existing.createdAt,
             updatedAt: new Date(now),
-          } satisfies View
+          })
         }
       )
 
@@ -113,23 +113,4 @@ export class ViewService extends ServiceMap.Service<
       return { list, findById, create, update, remove }
     })
   )
-}
-
-function toView(row: typeof views.$inferSelect): View {
-  const filters = row.filters as {
-    status: string[] | null
-    priority: string[] | null
-    projectId: string | null
-  }
-  return {
-    id: ViewId.makeUnsafe(row.id),
-    name: row.name,
-    filters: {
-      status: filters.status ? Option.some(filters.status as TaskStatus[]) : Option.none(),
-      priority: filters.priority ? Option.some(filters.priority as TaskPriority[]) : Option.none(),
-      projectId: filters.projectId ? Option.some(ProjectId.makeUnsafe(filters.projectId)) : Option.none(),
-    },
-    createdAt: new Date(row.createdAt),
-    updatedAt: new Date(row.updatedAt),
-  } satisfies View
 }

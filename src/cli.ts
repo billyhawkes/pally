@@ -64,10 +64,10 @@ const taskCreateCommand = Command.make("create", { title: taskTitle }, ({ title 
     const taskService = yield* TaskService
     const task = yield* taskService.create({
       title,
-      description: Option.none(),
+      description: null,
       status: "todo",
       priority: "medium",
-      projectId: Option.none(),
+      projectId: null,
     })
     yield* Console.log(`Created task #${task.id}: ${task.title}`)
   })
@@ -86,8 +86,8 @@ const taskGetCommand = Command.make("get", { id: taskIdArg }, ({ id }) =>
     yield* Console.log(`#${task.id} ${task.title}`)
     yield* Console.log(`  Status: ${task.status}`)
     yield* Console.log(`  Priority: ${task.priority}`)
-    if (Option.isSome(task.description)) {
-      yield* Console.log(`  Description: ${task.description.value}`)
+    if (task.description) {
+      yield* Console.log(`  Description: ${task.description}`)
     }
   })
 ).pipe(Command.withDescription("Get a task by ID"))
@@ -133,7 +133,7 @@ const projectCreateCommand = Command.make("create", { name: projectNameArg }, ({
     const projectService = yield* ProjectService
     const project = yield* projectService.create({
       name,
-      description: Option.none(),
+      description: null,
     })
     yield* Console.log(`Created project #${project.id}: ${project.name}`)
   })
@@ -149,8 +149,8 @@ const projectGetCommand = Command.make("get", { id: projectIdArg }, ({ id }) =>
     const projectService = yield* ProjectService
     const project = yield* projectService.findById(id)
     yield* Console.log(`#${project.id} ${project.name}`)
-    if (Option.isSome(project.description)) {
-      yield* Console.log(`  Description: ${project.description.value}`)
+    if (project.description) {
+      yield* Console.log(`  Description: ${project.description}`)
     }
   })
 ).pipe(Command.withDescription("Get a project by ID"))
@@ -195,9 +195,9 @@ const viewCreateCommand = Command.make("create", { name: viewNameArg }, ({ name 
     const view = yield* viewService.create({
       name,
       filters: {
-        status: Option.none(),
-        priority: Option.none(),
-        projectId: Option.none(),
+        status: null,
+        priority: null,
+        projectId: null,
       },
     })
     yield* Console.log(`Created view #${view.id}: ${view.name}`)

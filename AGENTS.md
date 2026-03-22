@@ -6,6 +6,7 @@ Pally is a web-first project and task application with strong Github two-way syn
 
 ## Rules
 - Never change the version of dependencies without asking
+- Never use `any` or `as any` without asking
 
 ## Tech Stack
 

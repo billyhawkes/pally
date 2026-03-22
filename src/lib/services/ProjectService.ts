@@ -1,4 +1,4 @@
-import { Clock, Effect, Layer, Option, ServiceMap } from "effect"
+import { Clock, Effect, Layer, Schema, ServiceMap } from "effect"
 import { eq } from "drizzle-orm"
 import {
   CreateProjectPayload,
@@ -10,6 +10,8 @@ import {
 import { DB } from "@/db/layer"
 import { dbQuery } from "@/db/query"
 import { projects } from "@/db/schema"
+
+const decodeProject = Schema.decodeUnknownSync(Project)
 
 export class ProjectService extends ServiceMap.Service<
   ProjectService,
@@ -28,7 +30,7 @@ export class ProjectService extends ServiceMap.Service<
 
       const list = Effect.fn("ProjectService.list")(function* () {
         const rows = yield* dbQuery(db.select().from(projects))
-        return rows.map(toProject)
+        return rows.map((row) => decodeProject(row))
       })
 
       const findById = Effect.fn("ProjectService.findById")(function* (id: ProjectId) {
@@ -38,7 +40,7 @@ export class ProjectService extends ServiceMap.Service<
         if (rows.length === 0) {
           return yield* Effect.fail(new ProjectNotFoundError({ id }))
         }
-        return toProject(rows[0]!)
+        return decodeProject(rows[0]!)
       })
 
       const create = Effect.fn("ProjectService.create")(function* (payload: CreateProjectPayload) {
@@ -48,16 +50,16 @@ export class ProjectService extends ServiceMap.Service<
           db.insert(projects).values({
             id,
             name: payload.name,
-            description: Option.getOrNull(payload.description) as string | null,
+            description: payload.description,
           })
         )
-        return {
-          id: ProjectId.makeUnsafe(id),
+        return decodeProject({
+          id,
           name: payload.name,
           description: payload.description,
           createdAt: new Date(now),
           updatedAt: new Date(now),
-        } satisfies Project
+        })
       })
 
       const update = Effect.fn("ProjectService.update")(
@@ -67,19 +69,19 @@ export class ProjectService extends ServiceMap.Service<
 
           const setValues: Record<string, unknown> = { updatedAt: new Date(now) }
           if ("name" in payload) setValues.name = payload.name
-          if ("description" in payload) setValues.description = Option.getOrNull(payload.description as Option.Option<string>)
+          if ("description" in payload) setValues.description = payload.description ?? null
 
           yield* dbQuery(
             db.update(projects).set(setValues).where(eq(projects.id, id as string))
           )
 
-          return {
+          return decodeProject({
             id: existing.id,
-            name: "name" in payload ? (payload.name as string) : existing.name,
-            description: "description" in payload ? payload.description as Option.Option<string> : existing.description,
+            name: "name" in payload ? payload.name : existing.name,
+            description: "description" in payload ? (payload.description ?? null) : existing.description,
             createdAt: existing.createdAt,
             updatedAt: new Date(now),
-          } satisfies Project
+          })
         }
       )
 
@@ -94,14 +96,4 @@ export class ProjectService extends ServiceMap.Service<
       return { list, findById, create, update, remove }
     })
   )
-}
-
-function toProject(row: typeof projects.$inferSelect): Project {
-  return {
-    id: ProjectId.makeUnsafe(row.id),
-    name: row.name,
-    description: row.description ? Option.some(row.description) : Option.none(),
-    createdAt: new Date(row.createdAt),
-    updatedAt: new Date(row.updatedAt),
-  } satisfies Project
 }
