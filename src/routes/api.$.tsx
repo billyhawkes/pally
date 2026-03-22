@@ -1,7 +1,7 @@
-import { createFileRoute } from "@tanstack/react-router"
-import { handler as effectHandler } from "@/lib/api-handler"
+import { createFileRoute } from "@tanstack/react-router";
+import { handler as effectHandler } from "@/lib/api-handler";
 
-const handler = effectHandler as (request: Request) => Promise<Response>
+const handler = effectHandler as (request: Request) => Promise<Response>;
 
 export const Route = createFileRoute("/api/$")({
   server: {
@@ -12,4 +12,4 @@ export const Route = createFileRoute("/api/$")({
       DELETE: async ({ request }) => handler(request),
     },
   },
-})
+});

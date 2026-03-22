@@ -63,10 +63,11 @@ export function AppSidebar({
   const orgsResult = useAtomValue(organizationsAtom);
   const organizations = orgsResult._tag === "Success" ? orgsResult.value : [];
 
-  const activeOrg =
-    currentOrgSlug
-      ? (organizations.find((o) => o.slug === currentOrgSlug) ?? null)
-      : null;
+  console.log(orgsResult, currentOrgSlug);
+
+  const activeOrg = currentOrgSlug
+    ? (organizations.find((o) => o.slug === currentOrgSlug) ?? null)
+    : null;
 
   const teamsResult = useAtomValue(teamsAtom(activeOrg?.id ?? ""));
   const teams = teamsResult?._tag === "Success" ? teamsResult.value : [];
@@ -103,7 +104,7 @@ export function AppSidebar({
   const userInitials = auth.user.name
     ? auth.user.name
         .split(" ")
-        .map((n) => n[0])
+        .map((n: string) => n[0])
         .join("")
         .toUpperCase()
         .slice(0, 2)

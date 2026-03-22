@@ -1,13 +1,12 @@
 import { Schema, SchemaGetter } from "effect";
 
 // Date schema that accepts both Date objects (server/DB) and ISO strings (HTTP JSON)
-const DateFromString = Schema.Date.pipe(
-  Schema.encodeTo(Schema.String, {
+export const DateFromHttp = Schema.Date.pipe(
+  Schema.encodeTo(Schema.Union([Schema.String, Schema.Date]), {
     decode: SchemaGetter.Date(),
     encode: SchemaGetter.String(),
   }),
 );
-export const DateFromHttp = Schema.Union([Schema.Date, DateFromString]);
 
 // Branded IDs
 export const TaskId = Schema.String.pipe(Schema.brand("TaskId"));

@@ -6,6 +6,6 @@ export class PallyClient extends AtomHttpApi.Service<PallyClient>()("PallyClient
   api: PallyApi,
   httpClient: FetchHttpClient.layer,
   baseUrl: typeof window !== "undefined"
-    ? window.location.origin
-    : "http://localhost:3000",
+    ? `${window.location.origin}/api`
+    : "http://localhost:3000/api",
 }) {}

@@ -23,6 +23,7 @@ export const Route = createFileRoute("/_authenticated/$orgSlug/tasks")({
 
 function TasksPage() {
   const tasks = useAtomValue(tasksAtom);
+  console.log(tasks);
 
   return (
     <div className="p-6 space-y-6">
