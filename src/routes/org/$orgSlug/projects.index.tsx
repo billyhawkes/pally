@@ -65,7 +65,11 @@ function ProjectsPage() {
               if (project.teamId) {
                 navigate({
                   to: "/org/$orgSlug/team/$teamSlug/projects/$projectId/tasks",
-                  params: { orgSlug, teamSlug: project.teamId, projectId: project.id },
+                  params: {
+                    orgSlug,
+                    teamSlug: project.teamId,
+                    projectId: project.id,
+                  },
                   search: {
                     tab: "table",
                     status: [],
