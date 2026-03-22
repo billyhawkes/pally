@@ -1,19 +1,19 @@
 import { Link, createFileRoute, redirect } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
-import { getSession, getFirstOrgSlug } from "@/lib/client-auth";
+import { getSession, getActiveOrgSlug } from "@/lib/client-auth";
 
 export const Route = createFileRoute("/")({
   beforeLoad: async () => {
     const session = await getSession();
     if (session) {
-      const slug = await getFirstOrgSlug();
+      const slug = await getActiveOrgSlug();
       if (slug) {
         throw redirect({
           to: "/org/$orgSlug/tasks",
           params: { orgSlug: slug },
         });
       }
-        throw redirect({ to: "/auth/create-organization" });
+      throw redirect({ to: "/auth/create-organization" });
     }
   },
   component: HomePage,

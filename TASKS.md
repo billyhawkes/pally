@@ -61,6 +61,7 @@ Goal: Connect TanStack DB to the Effect API and display data in the UI.
 - [x] Improve seeding by adding seed data on org creation not start. Add example projects/teams/tasks on org creation.
 - [ ] Build table view for tasks (use tanstack table)
 - [ ] Build board view for tasks (with dnd)
+- [ ] Setup task dynamic filters (e.g. status, priority, etc.)
 - [ ] Projects crud
 - [ ] Command palette with all actions
 
@@ -72,9 +73,3 @@ Goal: Connect Github with the Effect API with two-way syncing.
 - [ ] Allow linking projects to Github repos
 
 
-## Fixes
-- [x] Api docs url
-- [x] Fix tasks api route
-- [x] Migrate anchor tags to links
-- [x] Remove unused packages
-- [ ] Fix creating organization doesn't set it to the organization properly

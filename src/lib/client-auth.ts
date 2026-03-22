@@ -12,7 +12,18 @@ export async function resolveOrgBySlug({ data: slug }: { data: string }) {
   return { type: "found" as const, data: org };
 }
 
-export async function getFirstOrgSlug() {
+export async function getActiveOrgSlug() {
+  const session = await getSession();
   const { data: orgs } = await authClient.organization.list();
-  return orgs?.[0]?.slug ?? null;
+
+  if (!orgs?.length) {
+    return null;
+  }
+
+  const activeOrganizationId = session?.session.activeOrganizationId;
+  const activeOrg = activeOrganizationId
+    ? orgs.find((org) => org.id === activeOrganizationId)
+    : null;
+
+  return activeOrg?.slug ?? orgs[0]?.slug ?? null;
 }

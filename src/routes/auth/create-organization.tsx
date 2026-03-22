@@ -1,4 +1,4 @@
-import { createFileRoute, useRouter, redirect } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 import { useState, type FormEvent } from "react";
 import { authClient } from "@/lib/auth-client";
 import { getSession } from "@/lib/client-auth";
@@ -24,7 +24,6 @@ export const Route = createFileRoute("/auth/create-organization")({
 });
 
 function CreateOrganizationPage() {
-  const router = useRouter();
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -60,16 +59,7 @@ function CreateOrganizationPage() {
       return;
     }
 
-    if (org?.id) {
-      await authClient.organization.setActive({
-        organizationId: org.id,
-      });
-    }
-
-    router.navigate({
-      to: "/org/$orgSlug/tasks",
-      params: { orgSlug: org?.slug ?? slug },
-    });
+    window.location.assign(`/org/${org?.slug ?? slug}/tasks`);
   };
 
   return (
