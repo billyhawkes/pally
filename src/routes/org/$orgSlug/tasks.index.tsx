@@ -1,28 +1,23 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useAtomValue, useAtomSet } from "@effect/atom-react";
 import type { Task } from "@/lib/schemas";
-import { PallyClient } from "@/lib/pally-client";
+import {
+  allTasksAtom,
+  createTaskAtom,
+  deleteTaskAtom,
+  updateTaskAtom,
+} from "@/lib/atoms/tasks";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-
-const tasksAtom = PallyClient.query("tasks", "listTasks", {
-  query: {},
-  timeToLive: "5 minutes",
-  reactivityKeys: ["tasks"],
-});
-
-const createTaskAtom = PallyClient.mutation("tasks", "createTask");
-const updateTaskAtom = PallyClient.mutation("tasks", "updateTask");
-const deleteTaskAtom = PallyClient.mutation("tasks", "deleteTask");
 
 export const Route = createFileRoute("/org/$orgSlug/tasks/")({
   component: TasksPage,
 });
 
 function TasksPage() {
-  const tasks = useAtomValue(tasksAtom);
+  const tasks = useAtomValue(allTasksAtom);
   console.log(tasks);
 
   return (

@@ -2,6 +2,11 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useAtomValue, useAtomSet } from "@effect/atom-react";
 import type { Task, TeamId } from "@/lib/schemas";
 import { PallyClient } from "@/lib/pally-client";
+import {
+  createTaskAtom,
+  deleteTaskAtom,
+  updateTaskAtom,
+} from "@/lib/atoms/tasks";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -48,7 +53,7 @@ function TeamTasksPage() {
 }
 
 function CreateTaskForm({ teamId }: { teamId: TeamId }) {
-  const create = useAtomSet(PallyClient.mutation("tasks", "createTask"));
+  const create = useAtomSet(createTaskAtom);
 
   return (
     <form
@@ -95,8 +100,8 @@ const priorityColors: Record<Task["priority"], string> = {
 const statuses = ["todo", "in_progress", "done"] as const;
 
 function TaskCard({ task }: { task: Task }) {
-  const update = useAtomSet(PallyClient.mutation("tasks", "updateTask"));
-  const remove = useAtomSet(PallyClient.mutation("tasks", "deleteTask"));
+  const update = useAtomSet(updateTaskAtom);
+  const remove = useAtomSet(deleteTaskAtom);
   const nextStatus =
     statuses[(statuses.indexOf(task.status) + 1) % statuses.length];
 

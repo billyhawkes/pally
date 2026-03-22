@@ -53,6 +53,10 @@ Goal: Connect TanStack DB to the Effect API and display data in the UI.
 - [x] Update dashboard url to /{org}/tasks
 - [x] Add teams to sidebar. Break that down. Each team should have its own tasks. (/{org}/team/{team}/tasks) 
 - [ ] Refactor effect atom to atoms page, do team filtering client side (instead of another server request), setup optimistic updates with client side state for tasks/projects
+  - [x] Move shared task/project atom definitions into dedicated atom modules
+  - [ ] Refactor task routes to read from shared atom modules and filter team tasks client side
+  - [ ] Add optimistic task updates backed by client-side atom state
+  - [ ] Add optimistic project state primitives for upcoming project CRUD
 - [ ] Build table view for tasks (use tanstack table)
 - [ ] Build board view for tasks (with dnd)
 - [ ] Projects crud
