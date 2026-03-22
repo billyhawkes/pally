@@ -3,10 +3,10 @@ import { useAtomValue, useAtomSet } from "@effect/atom-react";
 import type { Task } from "@/lib/schemas";
 import { organizationsAtom } from "@/lib/atoms/organizations";
 import {
-  allTasksAtom,
   createTaskAtom,
   deleteTaskAtom,
   updateTaskAtom,
+  useTasksAtom,
 } from "@/lib/atoms/tasks";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,7 +19,7 @@ export const Route = createFileRoute("/org/$orgSlug/tasks/")({
 
 function TasksPage() {
   const { orgSlug } = Route.useParams();
-  const tasks = useAtomValue(allTasksAtom);
+  const tasks = useTasksAtom();
   const organizations = useAtomValue(organizationsAtom);
   const orgId =
     organizations._tag === "Success"
@@ -29,8 +29,6 @@ function TasksPage() {
     tasks._tag === "Success"
       ? tasks.value.filter((task) => task.orgId === orgId)
       : null;
-  console.log(tasks);
-
   return (
     <div className="p-6 space-y-6">
       <h1 className="text-2xl font-bold">Tasks</h1>

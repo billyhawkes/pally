@@ -56,7 +56,7 @@ Goal: Connect TanStack DB to the Effect API and display data in the UI.
   - [x] Move shared task/project atom definitions into dedicated atom modules
   - [x] Add `orgId` support to task/project/view schemas and persistence
   - [x] Refactor task routes to read from shared atom modules and filter org/team tasks client side
-  - [ ] Add optimistic task updates backed by client-side atom state
+  - [x] Add optimistic task updates backed by client-side atom state
   - [ ] Add optimistic project state primitives for upcoming project CRUD
 - [ ] Improve seeding by adding seed data on org creation not start. Add example projects/teams/tasks on org creation.
 - [ ] Build table view for tasks (use tanstack table)

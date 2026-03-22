@@ -3,10 +3,10 @@ import { useAtomValue, useAtomSet } from "@effect/atom-react";
 import type { Task, TeamId } from "@/lib/schemas";
 import { organizationsAtom } from "@/lib/atoms/organizations";
 import {
-  allTasksAtom,
   createTaskAtom,
   deleteTaskAtom,
   updateTaskAtom,
+  useTasksAtom,
 } from "@/lib/atoms/tasks";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -25,7 +25,7 @@ function TeamTasksPage() {
       ? (organizations.value.find((org) => org.slug === orgSlug)?.id ?? null)
       : null;
   const teamId = teamSlug as unknown as TeamId;
-  const tasks = useAtomValue(allTasksAtom);
+  const tasks = useTasksAtom();
   const filteredTasks =
     tasks._tag === "Success"
       ? tasks.value.filter(
