@@ -2,9 +2,18 @@
 
 ![Pally banner](./public/banner.png)
 
-Pally is a web-first project and task application inspired by Linear and GitHub Projects. It combines organization and team-based planning with a synced workflow for projects, tasks, views, and GitHub issues.
+Pally is an open-source project and task application for teams that want to self-host their planning stack. It is free forever, built around organizations and teams, and can optionally sync with GitHub issues and repositories when that workflow matters.
 
-Built with TanStack Start, Effect, Better Auth, Drizzle, Postgres, Bun, and shadcn/ui, Pally is designed to support both a browser-first experience and a CLI/API workflow.
+Built with TanStack Start, Effect, Better Auth, Drizzle, Postgres, Bun, and shadcn/ui, Pally is designed for a browser-first experience with a CLI and API alongside it.
+
+## Why Pally
+
+- 100% open source
+- Free forever
+- Self-hosting focused
+- Organizations, teams, projects, and tasks in one app
+- Optional GitHub sign-in and sync
+- API and CLI included
 
 ## Features
 
@@ -86,6 +95,17 @@ bunx drizzle-kit migrate --config drizzle.config.ts
 bun run dev
 ```
 
+## Self-Hosting Notes
+
+Pally is intended to run well as a self-hosted app.
+
+- Postgres is the primary database
+- Docker is supported for local and server setup
+- GitHub integrations are optional, not required
+- The CLI and API are available in the same codebase
+
+You can start with a local deployment and move to your own infrastructure without changing the core product model.
+
 ## Local URLs
 
 - App: `http://localhost:3000`
@@ -150,9 +170,11 @@ bun run cli project list
 
 ## GitHub Integration
 
+GitHub support is a primary feature, but it is still optional.
+
 Pally supports two GitHub integration modes:
 
 - GitHub OAuth for sign-in
 - GitHub App installation for repository selection and two-way issue sync
 
-You can run the app locally without either of these configured. Add the GitHub environment variables only when you are ready to enable those flows.
+You can run the app locally or self-host it without either of these configured. Add the GitHub environment variables only when you are ready to enable those flows.
