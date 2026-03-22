@@ -67,7 +67,7 @@ function CreateOrganizationPage() {
     }
 
     router.navigate({
-      to: "/$orgSlug/tasks",
+      to: "/org/$orgSlug/tasks",
       params: { orgSlug: org?.slug ?? slug },
     });
   };

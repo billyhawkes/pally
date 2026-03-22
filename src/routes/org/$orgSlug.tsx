@@ -3,7 +3,7 @@ import { getSession, resolveOrgBySlug } from "@/lib/client-auth";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 
-export const Route = createFileRoute("/$orgSlug")({
+export const Route = createFileRoute("/org/$orgSlug")({
   beforeLoad: async ({ params, location }) => {
     console.log("params", params);
     const session = await getSession();

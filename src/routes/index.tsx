@@ -9,7 +9,7 @@ export const Route = createFileRoute("/")({
       const slug = await getFirstOrgSlug();
       if (slug) {
         throw redirect({
-          to: "/$orgSlug/tasks",
+          to: "/org/$orgSlug/tasks",
           params: { orgSlug: slug },
         });
       }

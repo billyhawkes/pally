@@ -1,35 +1,35 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useAtomValue, useAtomSet } from "@effect/atom-react";
-import type { Task } from "@/lib/schemas";
+import type { Task, TeamId } from "@/lib/schemas";
 import { PallyClient } from "@/lib/pally-client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
-const tasksAtom = PallyClient.query("tasks", "listTasks", {
-  query: {},
-  timeToLive: "5 minutes",
-  reactivityKeys: ["tasks"],
+export const Route = createFileRoute(
+  "/org/$orgSlug/team/$teamSlug/tasks",
+)({
+  component: TeamTasksPage,
 });
 
-const createTaskAtom = PallyClient.mutation("tasks", "createTask");
-const updateTaskAtom = PallyClient.mutation("tasks", "updateTask");
-const deleteTaskAtom = PallyClient.mutation("tasks", "deleteTask");
+function TeamTasksPage() {
+  const { teamSlug } = Route.useParams();
+  const teamId = teamSlug as unknown as TeamId;
 
-export const Route = createFileRoute("/$orgSlug/tasks/")({
-  component: TasksPage,
-});
+  const tasksAtom = PallyClient.query("tasks", "listTasks", {
+    query: { teamId },
+    timeToLive: "5 minutes",
+    reactivityKeys: ["tasks"],
+  });
 
-function TasksPage() {
   const tasks = useAtomValue(tasksAtom);
-  console.log(tasks);
 
   return (
     <div className="p-6 space-y-6">
-      <h1 className="text-2xl font-bold">Tasks</h1>
+      <h1 className="text-2xl font-bold">Team Tasks</h1>
 
-      <CreateTaskForm />
+      <CreateTaskForm teamId={teamId} />
 
       <div className="space-y-2">
         {tasks._tag === "Initial" && (
@@ -42,15 +42,19 @@ function TasksPage() {
           (tasks.value.length === 0 ? (
             <p className="text-muted-foreground">No tasks yet.</p>
           ) : (
-            tasks.value.map((task) => <TaskCard key={task.id} task={task} />)
+            tasks.value.map((task) => (
+              <TaskCard key={task.id} task={task} />
+            ))
           ))}
       </div>
     </div>
   );
 }
 
-function CreateTaskForm() {
-  const create = useAtomSet(createTaskAtom);
+function CreateTaskForm({ teamId }: { teamId: TeamId }) {
+  const create = useAtomSet(
+    PallyClient.mutation("tasks", "createTask"),
+  );
 
   return (
     <form
@@ -68,7 +72,7 @@ function CreateTaskForm() {
             status: "todo",
             priority: "medium",
             projectId: null,
-            teamId: null,
+            teamId,
           },
           reactivityKeys: ["tasks"],
         });
@@ -97,8 +101,12 @@ const priorityColors: Record<Task["priority"], string> = {
 const statuses = ["todo", "in_progress", "done"] as const;
 
 function TaskCard({ task }: { task: Task }) {
-  const update = useAtomSet(updateTaskAtom);
-  const remove = useAtomSet(deleteTaskAtom);
+  const update = useAtomSet(
+    PallyClient.mutation("tasks", "updateTask"),
+  );
+  const remove = useAtomSet(
+    PallyClient.mutation("tasks", "deleteTask"),
+  );
   const nextStatus =
     statuses[(statuses.indexOf(task.status) + 1) % statuses.length];
 

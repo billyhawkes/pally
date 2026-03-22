@@ -9,32 +9,27 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as OrgSlugRouteImport } from './routes/$orgSlug'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as OrgSlugIndexRouteImport } from './routes/$orgSlug/index'
+import { Route as OrgOrgSlugRouteImport } from './routes/org/$orgSlug'
 import { Route as AuthSignupRouteImport } from './routes/auth/signup'
 import { Route as AuthLoginRouteImport } from './routes/auth/login'
 import { Route as AuthCreateOrganizationRouteImport } from './routes/auth/create-organization'
 import { Route as ApiSplatRouteImport } from './routes/api/$'
-import { Route as OrgSlugTasksIndexRouteImport } from './routes/$orgSlug/tasks.index'
+import { Route as OrgOrgSlugIndexRouteImport } from './routes/org/$orgSlug/index'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth.$'
-import { Route as OrgSlugTeamTeamSlugRouteImport } from './routes/$orgSlug/team.$teamSlug'
-import { Route as OrgSlugTeamTeamSlugTasksRouteImport } from './routes/$orgSlug/team.$teamSlug.tasks'
+import { Route as OrgOrgSlugTasksIndexRouteImport } from './routes/org/$orgSlug/tasks.index'
+import { Route as OrgOrgSlugTeamTeamSlugRouteImport } from './routes/org/$orgSlug/team.$teamSlug'
+import { Route as OrgOrgSlugTeamTeamSlugTasksRouteImport } from './routes/org/$orgSlug/team.$teamSlug.tasks'
 
-const OrgSlugRoute = OrgSlugRouteImport.update({
-  id: '/$orgSlug',
-  path: '/$orgSlug',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const OrgSlugIndexRoute = OrgSlugIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => OrgSlugRoute,
+const OrgOrgSlugRoute = OrgOrgSlugRouteImport.update({
+  id: '/org/$orgSlug',
+  path: '/org/$orgSlug',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const AuthSignupRoute = AuthSignupRouteImport.update({
   id: '/auth/signup',
@@ -56,40 +51,45 @@ const ApiSplatRoute = ApiSplatRouteImport.update({
   path: '/api/$',
   getParentRoute: () => rootRouteImport,
 } as any)
-const OrgSlugTasksIndexRoute = OrgSlugTasksIndexRouteImport.update({
-  id: '/tasks/',
-  path: '/tasks/',
-  getParentRoute: () => OrgSlugRoute,
+const OrgOrgSlugIndexRoute = OrgOrgSlugIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => OrgOrgSlugRoute,
 } as any)
 const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   id: '/api/auth/$',
   path: '/api/auth/$',
   getParentRoute: () => rootRouteImport,
 } as any)
-const OrgSlugTeamTeamSlugRoute = OrgSlugTeamTeamSlugRouteImport.update({
+const OrgOrgSlugTasksIndexRoute = OrgOrgSlugTasksIndexRouteImport.update({
+  id: '/tasks/',
+  path: '/tasks/',
+  getParentRoute: () => OrgOrgSlugRoute,
+} as any)
+const OrgOrgSlugTeamTeamSlugRoute = OrgOrgSlugTeamTeamSlugRouteImport.update({
   id: '/team/$teamSlug',
   path: '/team/$teamSlug',
-  getParentRoute: () => OrgSlugRoute,
+  getParentRoute: () => OrgOrgSlugRoute,
 } as any)
-const OrgSlugTeamTeamSlugTasksRoute =
-  OrgSlugTeamTeamSlugTasksRouteImport.update({
+const OrgOrgSlugTeamTeamSlugTasksRoute =
+  OrgOrgSlugTeamTeamSlugTasksRouteImport.update({
     id: '/tasks',
     path: '/tasks',
-    getParentRoute: () => OrgSlugTeamTeamSlugRoute,
+    getParentRoute: () => OrgOrgSlugTeamTeamSlugRoute,
   } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/$orgSlug': typeof OrgSlugRouteWithChildren
   '/api/$': typeof ApiSplatRoute
   '/auth/create-organization': typeof AuthCreateOrganizationRoute
   '/auth/login': typeof AuthLoginRoute
   '/auth/signup': typeof AuthSignupRoute
-  '/$orgSlug/': typeof OrgSlugIndexRoute
-  '/$orgSlug/team/$teamSlug': typeof OrgSlugTeamTeamSlugRouteWithChildren
+  '/org/$orgSlug': typeof OrgOrgSlugRouteWithChildren
   '/api/auth/$': typeof ApiAuthSplatRoute
-  '/$orgSlug/tasks/': typeof OrgSlugTasksIndexRoute
-  '/$orgSlug/team/$teamSlug/tasks': typeof OrgSlugTeamTeamSlugTasksRoute
+  '/org/$orgSlug/': typeof OrgOrgSlugIndexRoute
+  '/org/$orgSlug/team/$teamSlug': typeof OrgOrgSlugTeamTeamSlugRouteWithChildren
+  '/org/$orgSlug/tasks/': typeof OrgOrgSlugTasksIndexRoute
+  '/org/$orgSlug/team/$teamSlug/tasks': typeof OrgOrgSlugTeamTeamSlugTasksRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -97,40 +97,40 @@ export interface FileRoutesByTo {
   '/auth/create-organization': typeof AuthCreateOrganizationRoute
   '/auth/login': typeof AuthLoginRoute
   '/auth/signup': typeof AuthSignupRoute
-  '/$orgSlug': typeof OrgSlugIndexRoute
-  '/$orgSlug/team/$teamSlug': typeof OrgSlugTeamTeamSlugRouteWithChildren
   '/api/auth/$': typeof ApiAuthSplatRoute
-  '/$orgSlug/tasks': typeof OrgSlugTasksIndexRoute
-  '/$orgSlug/team/$teamSlug/tasks': typeof OrgSlugTeamTeamSlugTasksRoute
+  '/org/$orgSlug': typeof OrgOrgSlugIndexRoute
+  '/org/$orgSlug/team/$teamSlug': typeof OrgOrgSlugTeamTeamSlugRouteWithChildren
+  '/org/$orgSlug/tasks': typeof OrgOrgSlugTasksIndexRoute
+  '/org/$orgSlug/team/$teamSlug/tasks': typeof OrgOrgSlugTeamTeamSlugTasksRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/$orgSlug': typeof OrgSlugRouteWithChildren
   '/api/$': typeof ApiSplatRoute
   '/auth/create-organization': typeof AuthCreateOrganizationRoute
   '/auth/login': typeof AuthLoginRoute
   '/auth/signup': typeof AuthSignupRoute
-  '/$orgSlug/': typeof OrgSlugIndexRoute
-  '/$orgSlug/team/$teamSlug': typeof OrgSlugTeamTeamSlugRouteWithChildren
+  '/org/$orgSlug': typeof OrgOrgSlugRouteWithChildren
   '/api/auth/$': typeof ApiAuthSplatRoute
-  '/$orgSlug/tasks/': typeof OrgSlugTasksIndexRoute
-  '/$orgSlug/team/$teamSlug/tasks': typeof OrgSlugTeamTeamSlugTasksRoute
+  '/org/$orgSlug/': typeof OrgOrgSlugIndexRoute
+  '/org/$orgSlug/team/$teamSlug': typeof OrgOrgSlugTeamTeamSlugRouteWithChildren
+  '/org/$orgSlug/tasks/': typeof OrgOrgSlugTasksIndexRoute
+  '/org/$orgSlug/team/$teamSlug/tasks': typeof OrgOrgSlugTeamTeamSlugTasksRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
-    | '/$orgSlug'
     | '/api/$'
     | '/auth/create-organization'
     | '/auth/login'
     | '/auth/signup'
-    | '/$orgSlug/'
-    | '/$orgSlug/team/$teamSlug'
+    | '/org/$orgSlug'
     | '/api/auth/$'
-    | '/$orgSlug/tasks/'
-    | '/$orgSlug/team/$teamSlug/tasks'
+    | '/org/$orgSlug/'
+    | '/org/$orgSlug/team/$teamSlug'
+    | '/org/$orgSlug/tasks/'
+    | '/org/$orgSlug/team/$teamSlug/tasks'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -138,45 +138,38 @@ export interface FileRouteTypes {
     | '/auth/create-organization'
     | '/auth/login'
     | '/auth/signup'
-    | '/$orgSlug'
-    | '/$orgSlug/team/$teamSlug'
     | '/api/auth/$'
-    | '/$orgSlug/tasks'
-    | '/$orgSlug/team/$teamSlug/tasks'
+    | '/org/$orgSlug'
+    | '/org/$orgSlug/team/$teamSlug'
+    | '/org/$orgSlug/tasks'
+    | '/org/$orgSlug/team/$teamSlug/tasks'
   id:
     | '__root__'
     | '/'
-    | '/$orgSlug'
     | '/api/$'
     | '/auth/create-organization'
     | '/auth/login'
     | '/auth/signup'
-    | '/$orgSlug/'
-    | '/$orgSlug/team/$teamSlug'
+    | '/org/$orgSlug'
     | '/api/auth/$'
-    | '/$orgSlug/tasks/'
-    | '/$orgSlug/team/$teamSlug/tasks'
+    | '/org/$orgSlug/'
+    | '/org/$orgSlug/team/$teamSlug'
+    | '/org/$orgSlug/tasks/'
+    | '/org/$orgSlug/team/$teamSlug/tasks'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  OrgSlugRoute: typeof OrgSlugRouteWithChildren
   ApiSplatRoute: typeof ApiSplatRoute
   AuthCreateOrganizationRoute: typeof AuthCreateOrganizationRoute
   AuthLoginRoute: typeof AuthLoginRoute
   AuthSignupRoute: typeof AuthSignupRoute
+  OrgOrgSlugRoute: typeof OrgOrgSlugRouteWithChildren
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/$orgSlug': {
-      id: '/$orgSlug'
-      path: '/$orgSlug'
-      fullPath: '/$orgSlug'
-      preLoaderRoute: typeof OrgSlugRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/': {
       id: '/'
       path: '/'
@@ -184,12 +177,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/$orgSlug/': {
-      id: '/$orgSlug/'
-      path: '/'
-      fullPath: '/$orgSlug/'
-      preLoaderRoute: typeof OrgSlugIndexRouteImport
-      parentRoute: typeof OrgSlugRoute
+    '/org/$orgSlug': {
+      id: '/org/$orgSlug'
+      path: '/org/$orgSlug'
+      fullPath: '/org/$orgSlug'
+      preLoaderRoute: typeof OrgOrgSlugRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/auth/signup': {
       id: '/auth/signup'
@@ -219,12 +212,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/$orgSlug/tasks/': {
-      id: '/$orgSlug/tasks/'
-      path: '/tasks'
-      fullPath: '/$orgSlug/tasks/'
-      preLoaderRoute: typeof OrgSlugTasksIndexRouteImport
-      parentRoute: typeof OrgSlugRoute
+    '/org/$orgSlug/': {
+      id: '/org/$orgSlug/'
+      path: '/'
+      fullPath: '/org/$orgSlug/'
+      preLoaderRoute: typeof OrgOrgSlugIndexRouteImport
+      parentRoute: typeof OrgOrgSlugRoute
     }
     '/api/auth/$': {
       id: '/api/auth/$'
@@ -233,56 +226,67 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAuthSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/$orgSlug/team/$teamSlug': {
-      id: '/$orgSlug/team/$teamSlug'
-      path: '/team/$teamSlug'
-      fullPath: '/$orgSlug/team/$teamSlug'
-      preLoaderRoute: typeof OrgSlugTeamTeamSlugRouteImport
-      parentRoute: typeof OrgSlugRoute
-    }
-    '/$orgSlug/team/$teamSlug/tasks': {
-      id: '/$orgSlug/team/$teamSlug/tasks'
+    '/org/$orgSlug/tasks/': {
+      id: '/org/$orgSlug/tasks/'
       path: '/tasks'
-      fullPath: '/$orgSlug/team/$teamSlug/tasks'
-      preLoaderRoute: typeof OrgSlugTeamTeamSlugTasksRouteImport
-      parentRoute: typeof OrgSlugTeamTeamSlugRoute
+      fullPath: '/org/$orgSlug/tasks/'
+      preLoaderRoute: typeof OrgOrgSlugTasksIndexRouteImport
+      parentRoute: typeof OrgOrgSlugRoute
+    }
+    '/org/$orgSlug/team/$teamSlug': {
+      id: '/org/$orgSlug/team/$teamSlug'
+      path: '/team/$teamSlug'
+      fullPath: '/org/$orgSlug/team/$teamSlug'
+      preLoaderRoute: typeof OrgOrgSlugTeamTeamSlugRouteImport
+      parentRoute: typeof OrgOrgSlugRoute
+    }
+    '/org/$orgSlug/team/$teamSlug/tasks': {
+      id: '/org/$orgSlug/team/$teamSlug/tasks'
+      path: '/tasks'
+      fullPath: '/org/$orgSlug/team/$teamSlug/tasks'
+      preLoaderRoute: typeof OrgOrgSlugTeamTeamSlugTasksRouteImport
+      parentRoute: typeof OrgOrgSlugTeamTeamSlugRoute
     }
   }
 }
 
-interface OrgSlugTeamTeamSlugRouteChildren {
-  OrgSlugTeamTeamSlugTasksRoute: typeof OrgSlugTeamTeamSlugTasksRoute
+interface OrgOrgSlugTeamTeamSlugRouteChildren {
+  OrgOrgSlugTeamTeamSlugTasksRoute: typeof OrgOrgSlugTeamTeamSlugTasksRoute
 }
 
-const OrgSlugTeamTeamSlugRouteChildren: OrgSlugTeamTeamSlugRouteChildren = {
-  OrgSlugTeamTeamSlugTasksRoute: OrgSlugTeamTeamSlugTasksRoute,
+const OrgOrgSlugTeamTeamSlugRouteChildren: OrgOrgSlugTeamTeamSlugRouteChildren =
+  {
+    OrgOrgSlugTeamTeamSlugTasksRoute: OrgOrgSlugTeamTeamSlugTasksRoute,
+  }
+
+const OrgOrgSlugTeamTeamSlugRouteWithChildren =
+  OrgOrgSlugTeamTeamSlugRoute._addFileChildren(
+    OrgOrgSlugTeamTeamSlugRouteChildren,
+  )
+
+interface OrgOrgSlugRouteChildren {
+  OrgOrgSlugIndexRoute: typeof OrgOrgSlugIndexRoute
+  OrgOrgSlugTeamTeamSlugRoute: typeof OrgOrgSlugTeamTeamSlugRouteWithChildren
+  OrgOrgSlugTasksIndexRoute: typeof OrgOrgSlugTasksIndexRoute
 }
 
-const OrgSlugTeamTeamSlugRouteWithChildren =
-  OrgSlugTeamTeamSlugRoute._addFileChildren(OrgSlugTeamTeamSlugRouteChildren)
-
-interface OrgSlugRouteChildren {
-  OrgSlugIndexRoute: typeof OrgSlugIndexRoute
-  OrgSlugTeamTeamSlugRoute: typeof OrgSlugTeamTeamSlugRouteWithChildren
-  OrgSlugTasksIndexRoute: typeof OrgSlugTasksIndexRoute
+const OrgOrgSlugRouteChildren: OrgOrgSlugRouteChildren = {
+  OrgOrgSlugIndexRoute: OrgOrgSlugIndexRoute,
+  OrgOrgSlugTeamTeamSlugRoute: OrgOrgSlugTeamTeamSlugRouteWithChildren,
+  OrgOrgSlugTasksIndexRoute: OrgOrgSlugTasksIndexRoute,
 }
 
-const OrgSlugRouteChildren: OrgSlugRouteChildren = {
-  OrgSlugIndexRoute: OrgSlugIndexRoute,
-  OrgSlugTeamTeamSlugRoute: OrgSlugTeamTeamSlugRouteWithChildren,
-  OrgSlugTasksIndexRoute: OrgSlugTasksIndexRoute,
-}
-
-const OrgSlugRouteWithChildren =
-  OrgSlugRoute._addFileChildren(OrgSlugRouteChildren)
+const OrgOrgSlugRouteWithChildren = OrgOrgSlugRoute._addFileChildren(
+  OrgOrgSlugRouteChildren,
+)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  OrgSlugRoute: OrgSlugRouteWithChildren,
   ApiSplatRoute: ApiSplatRoute,
   AuthCreateOrganizationRoute: AuthCreateOrganizationRoute,
   AuthLoginRoute: AuthLoginRoute,
   AuthSignupRoute: AuthSignupRoute,
+  OrgOrgSlugRoute: OrgOrgSlugRouteWithChildren,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
 }
 export const routeTree = rootRouteImport

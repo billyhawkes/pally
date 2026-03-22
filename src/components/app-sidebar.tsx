@@ -57,7 +57,7 @@ export function AppSidebar({
   auth: NonNullable<AuthState["session"]>;
 }) {
   const router = useRouter();
-  const params = useParams({ from: "/$orgSlug" });
+  const params = useParams({ from: "/org/$orgSlug" });
   const currentOrgSlug = params.orgSlug;
 
   const orgsResult = useAtomValue(organizationsAtom);
@@ -93,7 +93,10 @@ export function AppSidebar({
     await authClient.organization.setActive({
       organizationId: org.id,
     });
-    router.navigate({ to: "/$orgSlug/tasks", params: { orgSlug: org.slug } });
+    router.navigate({
+      to: "/org/$orgSlug/tasks",
+      params: { orgSlug: org.slug },
+    });
   }
 
   async function handleSignOut() {
@@ -173,7 +176,7 @@ export function AppSidebar({
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
                     <Link
-                      to="/$orgSlug/tasks"
+                      to="/org/$orgSlug/tasks"
                       params={{ orgSlug: currentOrgSlug }}
                     >
                       <item.icon className="size-4" />
@@ -225,7 +228,7 @@ export function AppSidebar({
                   <SidebarMenuItem key={team.id}>
                     <SidebarMenuButton asChild>
                       <Link
-                        to="/$orgSlug/team/$teamSlug/tasks"
+                        to="/org/$orgSlug/team/$teamSlug/tasks"
                         params={{
                           orgSlug: currentOrgSlug,
                           teamSlug: team.id,
