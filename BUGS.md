@@ -6,4 +6,5 @@
 - [x] Remove unused packages
 - [x] Fix creating organization doesn't set it to the organization properly
 - [x] No way to open sidebar on mobile or just smaller screens
-- [ ] Projects dont seem team based
+- [x] Projects dont seem team based
+- [ ] Project right click doesn't have a menu

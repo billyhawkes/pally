@@ -136,6 +136,7 @@ const projectCreateCommand = Command.make("create", { name: projectNameArg }, ({
         name,
         description: null,
         orgId: null,
+        teamId: null,
       })
     yield* Console.log(`Created project #${project.id}: ${project.name}`)
   })

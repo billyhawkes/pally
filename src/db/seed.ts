@@ -57,12 +57,14 @@ export async function seedOrganizationData({
         name: "Workspace setup",
         description: "Shape your first workflow, owners, and project structure.",
         orgId: organizationId,
+        teamId: productTeamId,
       },
       {
         id: githubProjectId,
         name: "GitHub sync rollout",
         description: "Prepare projects and tasks for the upcoming GitHub integration.",
         orgId: organizationId,
+        teamId: engineeringTeamId,
       },
     ])
 

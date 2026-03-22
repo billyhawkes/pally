@@ -2,6 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useAtomValue } from "@effect/atom-react";
 import { organizationsAtom } from "@/lib/atoms/organizations";
 import { useProjectsAtom } from "@/lib/atoms/projects";
+import { teamsAtom } from "@/lib/atoms/teams";
 import { CreateProjectDialog } from "@/components/projects/create-project-dialog";
 import { ProjectTableView } from "@/components/projects/project-table-view";
 
@@ -19,6 +20,15 @@ function ProjectsPage() {
       ? (organizations.value.find((org) => org.slug === orgSlug) ?? null)
       : null;
   const orgId = organization?.id ?? null;
+  const teams = useAtomValue(teamsAtom(orgId));
+  const teamOptions =
+    teams._tag === "Success"
+      ? teams.value.map((team) => ({ id: team.id, name: team.name }))
+      : [];
+  const teamNamesById =
+    teams._tag === "Success"
+      ? Object.fromEntries(teams.value.map((team) => [team.id, team.name]))
+      : {};
   const filteredProjects =
     projects._tag === "Success"
       ? projects.value.filter((project) => project.orgId === orgId)
@@ -49,7 +59,23 @@ function ProjectsPage() {
         {projects._tag === "Success" && (
           <ProjectTableView
             projects={filteredProjects ?? []}
-            onOpenProject={(project) =>
+            teamNamesById={teamNamesById}
+            teamOptions={teamOptions}
+            onOpenProject={(project) => {
+              if (project.teamId) {
+                navigate({
+                  to: "/org/$orgSlug/team/$teamSlug/projects/$projectId/tasks",
+                  params: { orgSlug, teamSlug: project.teamId, projectId: project.id },
+                  search: {
+                    tab: "table",
+                    status: [],
+                    priority: [],
+                    projectId: project.id,
+                  },
+                });
+                return;
+              }
+
               navigate({
                 to: "/org/$orgSlug/projects/$projectId/tasks",
                 params: { orgSlug, projectId: project.id },
@@ -59,8 +85,8 @@ function ProjectsPage() {
                   priority: [],
                   projectId: project.id,
                 },
-              })
-            }
+              });
+            }}
           />
         )}
       </div>

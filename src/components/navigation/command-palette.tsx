@@ -498,6 +498,7 @@ export function CommandPalette() {
             onOpenChange={setProjectDialogOpen}
             hideDefaultTrigger
             orgId={activeOrg.id}
+            teamId={(currentTeam?.id as TeamId | undefined) ?? undefined}
             breadcrumbs={[
               activeOrg.name,
               ...(currentTeam ? [currentTeam.name] : []),

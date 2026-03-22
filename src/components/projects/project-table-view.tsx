@@ -9,8 +9,9 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import { ArrowUpDown, Ellipsis } from "lucide-react";
-import type { Project } from "@/lib/schemas";
-import { deleteProjectAtom } from "@/lib/atoms/projects";
+import type { Project, TeamId } from "@/lib/schemas";
+import { deleteProjectAtom, updateProjectAtom } from "@/lib/atoms/projects";
+import { TeamBadgeSelect } from "@/components/projects/project-team-badge-select";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -35,14 +36,19 @@ type ProjectTableViewProps = {
   projects: ReadonlyArray<Project>;
   emptyMessage?: string;
   onOpenProject?: (project: Project) => void;
+  teamNamesById?: Readonly<Record<string, string>>;
+  teamOptions?: ReadonlyArray<{ id: string; name: string }>;
 };
 
 export function ProjectTableView({
   projects,
   emptyMessage = "No projects yet.",
   onOpenProject,
+  teamNamesById = {},
+  teamOptions = [],
 }: ProjectTableViewProps) {
   const remove = useAtomSet(deleteProjectAtom);
+  const update = useAtomSet(updateProjectAtom);
   const data = useMemo(() => Array.from(projects), [projects]);
   const [sorting, setSorting] = useState<SortingState>([
     { id: "updatedAt", desc: true },
@@ -52,6 +58,14 @@ export function ProjectTableView({
   const removeProject = (project: Project) => {
     remove({
       params: { id: project.id },
+      reactivityKeys: ["projects"],
+    });
+  };
+
+  const updateProjectTeam = (project: Project, teamId: TeamId | null) => {
+    update({
+      params: { id: project.id },
+      payload: { teamId },
       reactivityKeys: ["projects"],
     });
   };
@@ -81,6 +95,43 @@ export function ProjectTableView({
             ) : null}
           </div>
         ),
+      },
+      {
+        accessorKey: "teamId",
+        header: ({ column }) => (
+          <Button
+            type="button"
+            variant="ghost"
+            className="-ml-3"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            Team
+            <ArrowUpDown className="size-4" />
+          </Button>
+        ),
+        sortingFn: (left, right) => {
+          const leftLabel = left.original.teamId
+            ? (teamNamesById[left.original.teamId] ?? left.original.teamId)
+            : "";
+          const rightLabel = right.original.teamId
+            ? (teamNamesById[right.original.teamId] ?? right.original.teamId)
+            : "";
+
+          return leftLabel.localeCompare(rightLabel);
+        },
+        cell: ({ row }) => {
+          return (
+            <TeamBadgeSelect
+              value={row.original.teamId}
+              teamNamesById={teamNamesById}
+              teamOptions={teamOptions}
+              onValueChange={(teamId) => updateProjectTeam(row.original, teamId)}
+              onTriggerClick={(event) => {
+                event.stopPropagation();
+              }}
+            />
+          );
+        },
       },
       {
         accessorKey: "updatedAt",
@@ -143,7 +194,7 @@ export function ProjectTableView({
         ),
       },
     ],
-    [],
+    [teamNamesById, teamOptions],
   );
 
   const table = useReactTable({
@@ -191,7 +242,7 @@ export function ProjectTableView({
                 <TableCell
                   key={cell.id}
                   onClick={(event) => {
-                    if (cell.column.id === "actions") {
+                    if (cell.column.id === "actions" || cell.column.id === "teamId") {
                       event.stopPropagation();
                     }
                   }}

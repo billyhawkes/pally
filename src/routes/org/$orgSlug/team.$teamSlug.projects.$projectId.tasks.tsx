@@ -49,7 +49,10 @@ function TeamProjectTasksPage() {
       : teamSlug;
   const project =
     projects._tag === "Success"
-      ? (projects.value.find((entry) => entry.id === projectId) ?? null)
+      ? (projects.value.find(
+          (entry) =>
+            entry.id === projectId && entry.orgId === orgId && entry.teamId === teamId,
+        ) ?? null)
       : null;
   const filters = taskFiltersFromSearch(search);
   const filteredTasks =

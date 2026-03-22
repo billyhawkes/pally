@@ -5,6 +5,7 @@ import { useProjectsAtom } from "@/lib/atoms/projects";
 import { teamsAtom } from "@/lib/atoms/teams";
 import { CreateProjectDialog } from "@/components/projects/create-project-dialog";
 import { ProjectTableView } from "@/components/projects/project-table-view";
+import type { TeamId } from "@/lib/schemas";
 
 export const Route = createFileRoute("/org/$orgSlug/team/$teamSlug/projects/")({
   component: TeamProjectsPage,
@@ -21,13 +22,24 @@ function TeamProjectsPage() {
       : null;
   const orgId = organization?.id ?? null;
   const teams = useAtomValue(teamsAtom(orgId));
+  const teamId = teamSlug as TeamId;
   const teamName =
     teams._tag === "Success"
-      ? (teams.value.find((team) => team.id === teamSlug)?.name ?? teamSlug)
+      ? (teams.value.find((team) => team.id === teamId)?.name ?? teamSlug)
       : teamSlug;
+  const teamNamesById =
+    teams._tag === "Success"
+      ? Object.fromEntries(teams.value.map((team) => [team.id, team.name]))
+      : {};
+  const teamOptions =
+    teams._tag === "Success"
+      ? teams.value.map((team) => ({ id: team.id, name: team.name }))
+      : [];
   const filteredProjects =
     projects._tag === "Success"
-      ? projects.value.filter((project) => project.orgId === orgId)
+      ? projects.value.filter(
+          (project) => project.orgId === orgId && project.teamId === teamId,
+        )
       : null;
 
   return (
@@ -41,6 +53,7 @@ function TeamProjectsPage() {
         </div>
         <CreateProjectDialog
           orgId={orgId}
+          teamId={teamId}
           breadcrumbs={organization ? [organization.name, teamName] : [orgSlug, teamName]}
         />
       </div>
@@ -55,6 +68,8 @@ function TeamProjectsPage() {
         {projects._tag === "Success" && (
           <ProjectTableView
             projects={filteredProjects ?? []}
+            teamNamesById={teamNamesById}
+            teamOptions={teamOptions}
             onOpenProject={(project) =>
               navigate({
                 to: "/org/$orgSlug/team/$teamSlug/projects/$projectId/tasks",

@@ -6,12 +6,16 @@ import {
   CreateProjectPayload,
   UpdateProjectPayload,
   type Project,
+  type TeamId,
 } from "@/lib/schemas";
 import {
   createProjectAtom,
   updateProjectAtom,
 } from "@/lib/atoms/projects";
 import { githubIntegrationAtom } from "@/lib/atoms/github";
+import { organizationsAtom } from "@/lib/atoms/organizations";
+import { teamsAtom } from "@/lib/atoms/teams";
+import { TeamBadgeSelect } from "@/components/projects/project-team-badge-select";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
@@ -29,6 +33,7 @@ const initialValues = {
 
 type CreateProjectDialogProps = {
   orgId: Project["orgId"];
+  teamId?: TeamId | null;
   breadcrumbs?: ReadonlyArray<string>;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
@@ -63,12 +68,14 @@ export function ProjectDialog({ trigger, ...props }: ProjectDialogProps) {
   const create = useAtomSet(createProjectAtom);
   const update = useAtomSet(updateProjectAtom);
   const githubIntegrationResult = useAtomValue(githubIntegrationAtom);
+  const organizationsResult = useAtomValue(organizationsAtom);
   const [internalOpen, setInternalOpen] = useState(false);
   const [name, setName] = useState(initialValues.name);
   const [description, setDescription] = useState(initialValues.description);
   const [githubRepositoryFullName, setGithubRepositoryFullName] = useState(
     initialValues.githubRepositoryFullName,
   );
+  const [selectedTeamId, setSelectedTeamId] = useState<TeamId | null>(null);
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -76,14 +83,33 @@ export function ProjectDialog({ trigger, ...props }: ProjectDialogProps) {
   const isEditing = editingProject !== null;
   const open = props.open ?? internalOpen;
   const orgId = isEditing ? editingProject.orgId : props.orgId;
+  const teamId = isEditing
+    ? editingProject.teamId
+    : ("teamId" in props ? (props.teamId ?? null) : null);
   const githubIntegration =
     githubIntegrationResult._tag === "Success" ? githubIntegrationResult.value : null;
   const isGithubAppConfigured = githubIntegration?.appConfigured ?? false;
+  const organizations =
+    organizationsResult._tag === "Success" ? organizationsResult.value : [];
+  const teamsResult = useAtomValue(teamsAtom(orgId));
+  const teamOptions =
+    teamsResult._tag === "Success"
+      ? teamsResult.value.map((team) => ({ id: team.id, name: team.name }))
+      : [];
+  const organizationName =
+    orgId
+      ? (organizations.find((organization) => organization.id === orgId)?.name ?? null)
+      : null;
+  const teamName =
+    selectedTeamId && teamsResult._tag === "Success"
+      ? (teamsResult.value.find((team) => team.id === selectedTeamId)?.name ?? null)
+      : null;
 
   const breadcrumbs = useMemo(
     () => (isEditing ? [] : (props.breadcrumbs?.filter(Boolean) ?? [])),
     [isEditing, props.breadcrumbs],
   );
+  const shouldShowTeamSelector = isEditing || !("teamId" in props && props.teamId);
 
   useEffect(() => {
     if (!open) {
@@ -94,6 +120,7 @@ export function ProjectDialog({ trigger, ...props }: ProjectDialogProps) {
       setName(editingProject.name);
       setDescription(editingProject.description ?? "");
       setGithubRepositoryFullName(editingProject.githubRepositoryFullName ?? "");
+      setSelectedTeamId(editingProject.teamId);
       setError("");
       setIsSubmitting(false);
       return;
@@ -102,14 +129,16 @@ export function ProjectDialog({ trigger, ...props }: ProjectDialogProps) {
     setName(initialValues.name);
     setDescription(initialValues.description);
     setGithubRepositoryFullName(initialValues.githubRepositoryFullName);
+    setSelectedTeamId(teamId);
     setError("");
     setIsSubmitting(false);
-  }, [editingProject, open]);
+  }, [editingProject, open, teamId]);
 
   const resetForm = () => {
     setName(initialValues.name);
     setDescription(initialValues.description);
     setGithubRepositoryFullName(initialValues.githubRepositoryFullName);
+    setSelectedTeamId(teamId);
     setError("");
     setIsSubmitting(false);
   };
@@ -143,12 +172,13 @@ export function ProjectDialog({ trigger, ...props }: ProjectDialogProps) {
 
     try {
       if (editingProject) {
-        const payload = decodeUpdateProjectPayload({
-          name: name.trim(),
-          description: description.trim() || null,
-          orgId,
-          githubRepositoryFullName: githubRepositoryFullName.trim() || null,
-        });
+          const payload = decodeUpdateProjectPayload({
+            name: name.trim(),
+            description: description.trim() || null,
+            orgId,
+            teamId: selectedTeamId,
+            githubRepositoryFullName: githubRepositoryFullName.trim() || null,
+          });
 
         await Promise.resolve(
           update({
@@ -158,12 +188,13 @@ export function ProjectDialog({ trigger, ...props }: ProjectDialogProps) {
           }),
         );
       } else {
-        const payload = decodeCreateProjectPayload({
-          name: name.trim(),
-          description: description.trim() || null,
-          orgId,
-          githubRepositoryFullName: githubRepositoryFullName.trim() || null,
-        });
+          const payload = decodeCreateProjectPayload({
+            name: name.trim(),
+            description: description.trim() || null,
+            orgId,
+            teamId: selectedTeamId,
+            githubRepositoryFullName: githubRepositoryFullName.trim() || null,
+          });
 
         await Promise.resolve(
           create({
@@ -229,9 +260,29 @@ export function ProjectDialog({ trigger, ...props }: ProjectDialogProps) {
         <form className="space-y-6" onSubmit={handleSubmit}>
           <div className="space-y-3 bg-linear-to-b from-muted/25 to-transparent px-5 pt-5">
             {isEditing ? (
-              <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
-                Edit project
-              </p>
+              <div className="flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
+                {organizationName ? (
+                  <Badge
+                    variant="outline"
+                    className="h-6 rounded-full px-2 normal-case"
+                  >
+                    {organizationName}
+                  </Badge>
+                ) : null}
+                {teamName ? (
+                  <>
+                    {organizationName ? <ChevronRight className="size-3.5" /> : null}
+                    <Badge
+                      variant="outline"
+                      className="h-6 rounded-full px-2 normal-case"
+                    >
+                      {teamName}
+                    </Badge>
+                  </>
+                ) : null}
+                {(organizationName || teamName) ? <ChevronRight className="size-3.5" /> : null}
+                <span className="font-medium normal-case">Edit project</span>
+              </div>
             ) : (
               <div className="flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
                 {breadcrumbs.map((crumb, index) => (
@@ -272,6 +323,16 @@ export function ProjectDialog({ trigger, ...props }: ProjectDialogProps) {
               placeholder="Add description..."
               className="min-h-28 w-full resize-none rounded-none border-0 bg-transparent px-0 py-0 text-sm leading-6 text-muted-foreground outline-none placeholder:text-muted-foreground/70 focus-visible:border-transparent focus-visible:ring-0 md:text-base"
             />
+
+            {shouldShowTeamSelector ? (
+              <div className="flex flex-wrap items-center gap-2 pt-1">
+                <TeamBadgeSelect
+                  value={selectedTeamId}
+                  teamOptions={teamOptions}
+                  onValueChange={setSelectedTeamId}
+                />
+              </div>
+            ) : null}
 
             <div className="space-y-2 border-t border-border/50 pt-4">
               <div className="flex items-center justify-between gap-3">

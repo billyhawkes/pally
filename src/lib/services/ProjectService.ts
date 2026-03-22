@@ -6,6 +6,7 @@ import {
   Project,
   ProjectId,
   ProjectNotFoundError,
+  TeamId,
   UpdateProjectPayload,
 } from "@/lib/schemas"
 import { DB } from "@/db/layer"
@@ -17,7 +18,10 @@ const decodeProject = Schema.decodeUnknownSync(Project)
 export class ProjectService extends ServiceMap.Service<
   ProjectService,
   {
-    readonly list: (filters?: { orgId?: OrganizationId | undefined }) => Effect.Effect<readonly Project[]>
+    readonly list: (filters?: {
+      orgId?: OrganizationId | undefined;
+      teamId?: TeamId | undefined;
+    }) => Effect.Effect<readonly Project[]>
     readonly findById: (id: ProjectId) => Effect.Effect<Project, ProjectNotFoundError>
     readonly create: (payload: CreateProjectPayload) => Effect.Effect<Project>
     readonly update: (id: ProjectId, payload: UpdateProjectPayload) => Effect.Effect<Project, ProjectNotFoundError>
@@ -31,10 +35,14 @@ export class ProjectService extends ServiceMap.Service<
 
       const list = Effect.fn("ProjectService.list")(function* (filters?: {
         orgId?: OrganizationId | undefined
+        teamId?: TeamId | undefined
       }) {
         const conditions = []
         if (filters?.orgId) {
           conditions.push(eq(projects.orgId, filters.orgId as string))
+        }
+        if (filters?.teamId) {
+          conditions.push(eq(projects.teamId, filters.teamId as string))
         }
 
         const query =
@@ -65,6 +73,7 @@ export class ProjectService extends ServiceMap.Service<
             name: payload.name,
             description: payload.description,
             orgId: payload.orgId,
+            teamId: payload.teamId,
             githubRepositoryFullName: payload.githubRepositoryFullName ?? null,
             githubInstallationId: payload.githubInstallationId ?? null,
           })
@@ -74,6 +83,7 @@ export class ProjectService extends ServiceMap.Service<
           name: payload.name,
           description: payload.description,
           orgId: payload.orgId,
+          teamId: payload.teamId,
           githubRepositoryFullName: payload.githubRepositoryFullName ?? null,
           githubInstallationId: payload.githubInstallationId ?? null,
           createdAt: new Date(now),
@@ -90,6 +100,7 @@ export class ProjectService extends ServiceMap.Service<
           if ("name" in payload) setValues.name = payload.name
           if ("description" in payload) setValues.description = payload.description ?? null
           if ("orgId" in payload) setValues.orgId = payload.orgId ?? null
+          if ("teamId" in payload) setValues.teamId = payload.teamId ?? null
           if ("githubRepositoryFullName" in payload) {
             setValues.githubRepositoryFullName = payload.githubRepositoryFullName ?? null
           }
@@ -106,6 +117,7 @@ export class ProjectService extends ServiceMap.Service<
             name: "name" in payload ? payload.name : existing.name,
             description: "description" in payload ? (payload.description ?? null) : existing.description,
             orgId: "orgId" in payload ? (payload.orgId ?? null) : existing.orgId,
+            teamId: "teamId" in payload ? (payload.teamId ?? null) : existing.teamId,
             githubRepositoryFullName:
               "githubRepositoryFullName" in payload
                 ? (payload.githubRepositoryFullName ?? null)

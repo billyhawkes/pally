@@ -21,6 +21,7 @@ export const projects = pgTable("projects", {
   name: varchar("name", { length: 255 }).notNull(),
   description: text("description"),
   orgId: varchar("org_id", { length: 255 }),
+  teamId: varchar("team_id", { length: 255 }),
   githubRepositoryFullName: varchar("github_repository_full_name", { length: 255 }),
   githubInstallationId: varchar("github_installation_id", { length: 255 }),
   createdAt: timestamp("created_at").notNull().defaultNow(),

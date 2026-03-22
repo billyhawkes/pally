@@ -81,6 +81,7 @@ export const Project = Schema.Struct({
   name: Schema.NonEmptyString,
   description: Schema.NullOr(Schema.String),
   orgId: Schema.NullOr(OrganizationId),
+  teamId: Schema.NullOr(TeamId),
   githubRepositoryFullName: Schema.NullOr(Schema.String),
   githubInstallationId: Schema.NullOr(Schema.String),
   createdAt: DateFromHttp,
@@ -92,6 +93,7 @@ export const CreateProjectPayload = Schema.Struct({
   name: Schema.NonEmptyString,
   description: Schema.NullOr(Schema.String),
   orgId: Schema.NullOr(OrganizationId),
+  teamId: Schema.NullOr(TeamId),
   githubRepositoryFullName: Schema.optionalKey(Schema.NullOr(Schema.String)),
   githubInstallationId: Schema.optionalKey(Schema.NullOr(Schema.String)),
 });
@@ -101,6 +103,7 @@ export const UpdateProjectPayload = Schema.Struct({
   name: Schema.optionalKey(Schema.NonEmptyString),
   description: Schema.optionalKey(Schema.NullOr(Schema.String)),
   orgId: Schema.optionalKey(Schema.NullOr(OrganizationId)),
+  teamId: Schema.optionalKey(Schema.NullOr(TeamId)),
   githubRepositoryFullName: Schema.optionalKey(Schema.NullOr(Schema.String)),
   githubInstallationId: Schema.optionalKey(Schema.NullOr(Schema.String)),
 });

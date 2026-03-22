@@ -3,6 +3,7 @@ import { useAtomValue } from "@effect/atom-react";
 import { Button } from "@/components/ui/button";
 import { organizationsAtom } from "@/lib/atoms/organizations";
 import { useProjectsAtom } from "@/lib/atoms/projects";
+import { teamsAtom } from "@/lib/atoms/teams";
 import { useTasksAtom } from "@/lib/atoms/tasks";
 import type { ProjectId, TaskFilters } from "@/lib/schemas";
 import {
@@ -38,9 +39,16 @@ function ProjectTasksPage() {
       ? (organizations.value.find((org) => org.slug === orgSlug) ?? null)
       : null;
   const orgId = organization?.id ?? null;
+  const teams = useAtomValue(teamsAtom(orgId));
   const project =
     projects._tag === "Success"
-      ? (projects.value.find((entry) => entry.id === projectId) ?? null)
+      ? (projects.value.find(
+          (entry) => entry.id === projectId && entry.orgId === orgId,
+        ) ?? null)
+      : null;
+  const teamName =
+    project?.teamId && teams._tag === "Success"
+      ? (teams.value.find((team) => team.id === project.teamId)?.name ?? null)
       : null;
   const filters = taskFiltersFromSearch(search);
   const filteredTasks =
@@ -74,7 +82,7 @@ function ProjectTasksPage() {
         <div className="space-y-1">
           <h1 className="text-2xl font-bold">{project?.name ?? "Project Tasks"}</h1>
           <p className="text-sm text-muted-foreground">
-            Tasks assigned to this project.
+            {teamName ? `${teamName} tasks assigned to this project.` : "Tasks assigned to this project."}
           </p>
         </div>
 
@@ -91,11 +99,12 @@ function ProjectTasksPage() {
           ) : null}
           <CreateTaskDialog
             orgId={orgId}
+            teamId={project?.teamId ?? undefined}
             projectId={projectId as unknown as ProjectId}
             breadcrumbs={
               organization
-                ? [organization.name, project?.name ?? "Project"]
-                : [orgSlug, project?.name ?? projectId]
+                ? [organization.name, ...(teamName ? [teamName] : []), project?.name ?? "Project"]
+                : [orgSlug, ...(teamName ? [teamName] : []), project?.name ?? projectId]
             }
           />
         </div>
