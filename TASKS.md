@@ -63,7 +63,7 @@ Goal: Connect TanStack DB to the Effect API and display data in the UI.
 - [x] Build board view for tasks (with dnd)
 - [x] Create task popup form (try to use the effect schema and atom for state)
 - [x] Setup task dynamic filters (e.g. status, priority, etc.)
-- [ ] Projects crud
+- [x] Projects crud
 - [ ] Command palette with all actions
 
 ## Phase 6: Github Integration

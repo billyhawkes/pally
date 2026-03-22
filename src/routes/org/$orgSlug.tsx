@@ -6,6 +6,7 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
+import { HeaderBreadcrumbs } from "@/components/navigation/header-breadcrumbs";
 
 export const Route = createFileRoute("/org/$orgSlug")({
   beforeLoad: async ({ params, location }) => {
@@ -41,10 +42,10 @@ function OrgSlugLayout() {
     <SidebarProvider>
       <AppSidebar auth={auth} />
       <SidebarInset>
-        <header className="sticky top-0 z-20 flex items-center gap-3 border-b bg-background/95 px-4 py-3 backdrop-blur md:hidden">
+        <header className="sticky top-0 z-20 flex items-center gap-3 border-b bg-background/95 px-4 py-3 backdrop-blur">
           <SidebarTrigger />
-          <div className="min-w-0">
-            <p className="truncate text-sm font-medium">{orgName}</p>
+          <div className="min-w-0 flex-1">
+            <HeaderBreadcrumbs orgName={orgName} />
           </div>
         </header>
         <Outlet />

@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react"
 import { useAtomSet } from "@effect/atom-react"
+import { Link, useParams } from "@tanstack/react-router"
 import {
   flexRender,
   getCoreRowModel,
@@ -10,6 +11,7 @@ import {
 } from "@tanstack/react-table"
 import { ArrowUpDown } from "lucide-react"
 import type { Task } from "@/lib/schemas"
+import { useProjectsAtom } from "@/lib/atoms/projects"
 import { deleteTaskAtom, updateTaskAtom } from "@/lib/atoms/tasks"
 import { Button } from "@/components/ui/button"
 import {
@@ -52,14 +54,23 @@ export function TaskTableView({
   tasks,
   emptyMessage = "No tasks yet.",
 }: TaskTableViewProps) {
+  const params = useParams({ strict: false })
   const update = useAtomSet(updateTaskAtom)
   const remove = useAtomSet(deleteTaskAtom)
+  const projects = useProjectsAtom()
   const data = useMemo(() => Array.from(tasks), [tasks])
   const [sorting, setSorting] = useState<SortingState>([
     { id: "updatedAt", desc: true },
   ])
   const [contextMenu, setContextMenu] = useState<TaskContextMenuState | null>(null)
   const [editingTask, setEditingTask] = useState<Task | null>(null)
+  const projectNames = useMemo(
+    () =>
+      projects._tag === "Success"
+        ? new Map(projects.value.map((project) => [project.id, project.name]))
+        : new Map(),
+    [projects],
+  )
 
   const moveTask = (task: Task, status: Task["status"]) => {
     if (task.status === status) {
@@ -117,6 +128,57 @@ export function TaskTableView({
             ) : null}
           </div>
         ),
+      },
+      {
+        id: "project",
+        header: "Project",
+        enableSorting: false,
+        cell: ({ row }) => {
+          const projectId = row.original.projectId
+          const projectName = projectId
+            ? (projectNames.get(projectId) ?? "Unknown project")
+            : null
+
+          return (
+            projectId && params.orgSlug ? (
+              <Link
+                to={
+                  row.original.teamId
+                    ? "/org/$orgSlug/team/$teamSlug/projects/$projectId/tasks"
+                    : "/org/$orgSlug/projects/$projectId/tasks"
+                }
+                params={
+                  row.original.teamId
+                    ? {
+                        orgSlug: params.orgSlug,
+                        teamSlug: row.original.teamId,
+                        projectId,
+                      }
+                    : {
+                        orgSlug: params.orgSlug,
+                        projectId,
+                      }
+                }
+                search={{
+                  tab: "table",
+                  status: [],
+                  priority: [],
+                  projectId,
+                }}
+                className="text-sm text-foreground underline decoration-dotted underline-offset-4 hover:text-primary"
+                onClick={(event) => {
+                  event.stopPropagation()
+                }}
+              >
+                {projectName}
+              </Link>
+            ) : (
+              <span className="text-sm text-muted-foreground">
+                {projectName ?? "Unassigned"}
+              </span>
+            )
+          )
+        },
       },
       {
         accessorKey: "status",
@@ -185,7 +247,7 @@ export function TaskTableView({
         ),
       },
     ],
-    [changePriority, moveTask, removeTask],
+    [changePriority, moveTask, projectNames, removeTask],
   )
 
   const table = useReactTable({

@@ -3,88 +3,71 @@ import { Schema } from "effect";
 import { useAtomSet } from "@effect/atom-react";
 import { ChevronRight } from "lucide-react";
 import {
-  CreateTaskPayload,
-  type ProjectId,
-  UpdateTaskPayload,
-  type Task,
-  type TeamId,
+  CreateProjectPayload,
+  UpdateProjectPayload,
+  type Project,
 } from "@/lib/schemas";
-import { createTaskAtom, updateTaskAtom } from "@/lib/atoms/tasks";
 import {
-  TaskPriorityBadgeSelect,
-  TaskStatusBadgeSelect,
-} from "@/components/tasks/task-property-badges";
+  createProjectAtom,
+  updateProjectAtom,
+} from "@/lib/atoms/projects";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 
-const decodeCreateTaskPayload = Schema.decodeUnknownSync(CreateTaskPayload);
-const decodeUpdateTaskPayload = Schema.decodeUnknownSync(UpdateTaskPayload);
+const decodeCreateProjectPayload = Schema.decodeUnknownSync(CreateProjectPayload);
+const decodeUpdateProjectPayload = Schema.decodeUnknownSync(UpdateProjectPayload);
 
 const initialValues = {
-  title: "",
+  name: "",
   description: "",
-  status: "todo" as const,
-  priority: "medium" as const,
 };
 
-type CreateTaskDialogProps = {
-  orgId: Task["orgId"];
-  teamId?: TeamId | null;
-  projectId?: ProjectId | null;
+type CreateProjectDialogProps = {
+  orgId: Project["orgId"];
   breadcrumbs?: ReadonlyArray<string>;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
   trigger?: ReactNode;
-  task?: never;
+  project?: never;
 };
 
-type EditTaskDialogProps = {
-  task: Task;
+type EditProjectDialogProps = {
+  project: Project;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
   trigger?: ReactNode;
   orgId?: never;
-  teamId?: never;
-  projectId?: never;
   breadcrumbs?: never;
 };
 
-type TaskDialogProps = CreateTaskDialogProps | EditTaskDialogProps;
+type ProjectDialogProps = CreateProjectDialogProps | EditProjectDialogProps;
 
-function getTaskDialogErrorMessage(isEditing: boolean, error: unknown) {
+function getProjectDialogErrorMessage(isEditing: boolean, error: unknown) {
   if (error instanceof Error && error.message.trim().length > 0) {
     return error.message;
   }
 
   return isEditing
-    ? "Failed to save task. Try again."
-    : "Failed to create task. Try again.";
+    ? "Failed to save project. Try again."
+    : "Failed to create project. Try again.";
 }
 
-export function TaskDialog({ trigger, ...props }: TaskDialogProps) {
-  const create = useAtomSet(createTaskAtom);
-  const update = useAtomSet(updateTaskAtom);
+export function ProjectDialog({ trigger, ...props }: ProjectDialogProps) {
+  const create = useAtomSet(createProjectAtom);
+  const update = useAtomSet(updateProjectAtom);
   const [internalOpen, setInternalOpen] = useState(false);
-  const [title, setTitle] = useState(initialValues.title);
+  const [name, setName] = useState(initialValues.name);
   const [description, setDescription] = useState(initialValues.description);
-  const [status, setStatus] = useState<CreateTaskPayload["status"]>(
-    initialValues.status,
-  );
-  const [priority, setPriority] = useState<CreateTaskPayload["priority"]>(
-    initialValues.priority,
-  );
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const editingTask = "task" in props ? (props.task ?? null) : null;
-  const isEditing = editingTask !== null;
+  const editingProject = "project" in props ? (props.project ?? null) : null;
+  const isEditing = editingProject !== null;
   const open = props.open ?? internalOpen;
-  const orgId = isEditing ? editingTask.orgId : props.orgId;
-  const teamId = isEditing ? editingTask.teamId : (props.teamId ?? null);
-  const projectId = isEditing ? editingTask.projectId : (props.projectId ?? null);
+  const orgId = isEditing ? editingProject.orgId : props.orgId;
 
   const breadcrumbs = useMemo(
     () => (isEditing ? [] : (props.breadcrumbs?.filter(Boolean) ?? [])),
@@ -96,29 +79,23 @@ export function TaskDialog({ trigger, ...props }: TaskDialogProps) {
       return;
     }
 
-    if (editingTask) {
-      setTitle(editingTask.title);
-      setDescription(editingTask.description ?? "");
-      setStatus(editingTask.status);
-      setPriority(editingTask.priority);
+    if (editingProject) {
+      setName(editingProject.name);
+      setDescription(editingProject.description ?? "");
       setError("");
       setIsSubmitting(false);
       return;
     }
 
-    setTitle(initialValues.title);
+    setName(initialValues.name);
     setDescription(initialValues.description);
-    setStatus(initialValues.status);
-    setPriority(initialValues.priority);
     setError("");
     setIsSubmitting(false);
-  }, [editingTask, open]);
+  }, [editingProject, open]);
 
   const resetForm = () => {
-    setTitle(initialValues.title);
+    setName(initialValues.name);
     setDescription(initialValues.description);
-    setStatus(initialValues.status);
-    setPriority(initialValues.priority);
     setError("");
     setIsSubmitting(false);
   };
@@ -140,57 +117,49 @@ export function TaskDialog({ trigger, ...props }: TaskDialogProps) {
     setError("");
     setIsSubmitting(true);
 
-    if (title.trim().length === 0) {
+    if (name.trim().length === 0) {
       setError(
         isEditing
-          ? "Title is required to update a task."
-          : "Title is required to create a task.",
+          ? "Name is required to update a project."
+          : "Name is required to create a project.",
       );
       setIsSubmitting(false);
       return;
     }
 
     try {
-      if (editingTask) {
-        const payload = decodeUpdateTaskPayload({
-          title: title.trim(),
+      if (editingProject) {
+        const payload = decodeUpdateProjectPayload({
+          name: name.trim(),
           description: description.trim() || null,
-          status,
-          priority,
           orgId,
-          projectId,
-          teamId,
         });
 
         await Promise.resolve(
           update({
-            params: { id: editingTask.id },
+            params: { id: editingProject.id },
             payload,
-            reactivityKeys: ["tasks"],
+            reactivityKeys: ["projects"],
           }),
         );
       } else {
-        const payload = decodeCreateTaskPayload({
-          title: title.trim(),
+        const payload = decodeCreateProjectPayload({
+          name: name.trim(),
           description: description.trim() || null,
-          status,
-          priority,
           orgId,
-          projectId,
-          teamId,
         });
 
         await Promise.resolve(
           create({
             payload,
-            reactivityKeys: ["tasks"],
+            reactivityKeys: ["projects"],
           }),
         );
       }
 
       handleOpenChange(false);
     } catch (error) {
-      setError(getTaskDialogErrorMessage(isEditing, error));
+      setError(getProjectDialogErrorMessage(isEditing, error));
       setIsSubmitting(false);
     }
   };
@@ -201,7 +170,7 @@ export function TaskDialog({ trigger, ...props }: TaskDialogProps) {
         <DialogTrigger asChild>{trigger}</DialogTrigger>
       ) : !isEditing ? (
         <DialogTrigger asChild>
-          <Button type="button">Create task</Button>
+          <Button type="button">Create project</Button>
         </DialogTrigger>
       ) : null}
 
@@ -212,8 +181,8 @@ export function TaskDialog({ trigger, ...props }: TaskDialogProps) {
         <form className="space-y-6" onSubmit={handleSubmit}>
           <div className="space-y-3 bg-linear-to-b from-muted/25 to-transparent px-5 pt-5">
             {isEditing ? (
-              <p className="text-xs font-medium tracking-widest text-muted-foreground uppercase">
-                Edit task
+              <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
+                Edit project
               </p>
             ) : (
               <div className="flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
@@ -234,41 +203,31 @@ export function TaskDialog({ trigger, ...props }: TaskDialogProps) {
                 {breadcrumbs.length > 0 ? (
                   <ChevronRight className="size-3.5" />
                 ) : null}
-                <span className="font-medium normal-case">Create task</span>
+                <span className="font-medium normal-case">Create project</span>
               </div>
             )}
 
             <Input
-              id="task-title"
-              value={title}
-              onChange={(event) => setTitle(event.target.value)}
-              placeholder="Task title"
+              id="project-name"
+              value={name}
+              onChange={(event) => setName(event.target.value)}
+              placeholder="Project name"
               autoFocus
               aria-invalid={error ? true : undefined}
-              className="h-auto border-0 bg-transparent px-0 py-0 text-xl leading-tight font-semibold shadow-none ring-0 placeholder:text-muted-foreground/70 focus-visible:border-transparent focus-visible:ring-0 md:text-2xl rounded-none"
+              className="h-auto rounded-none border-0 bg-transparent px-0 py-0 text-xl font-semibold leading-tight shadow-none ring-0 placeholder:text-muted-foreground/70 focus-visible:border-transparent focus-visible:ring-0 md:text-2xl"
             />
 
             <Textarea
-              id="task-description"
+              id="project-description"
               value={description}
               onChange={(event) => setDescription(event.target.value)}
               placeholder="Add description..."
-              className="min-h-28 w-full resize-none border-0 bg-transparent px-0 py-0 text-sm leading-6 text-muted-foreground outline-none placeholder:text-muted-foreground/70 md:text-base focus-visible:border-transparent focus-visible:ring-0 rounded-none"
-            />
-          </div>
-
-          <div className="flex flex-wrap items-center gap-2 px-5">
-            <TaskStatusBadgeSelect status={status} onStatusChange={setStatus} />
-            <TaskPriorityBadgeSelect
-              priority={priority}
-              onPriorityChange={setPriority}
+              className="min-h-28 w-full resize-none rounded-none border-0 bg-transparent px-0 py-0 text-sm leading-6 text-muted-foreground outline-none placeholder:text-muted-foreground/70 focus-visible:border-transparent focus-visible:ring-0 md:text-base"
             />
           </div>
 
           <div className="flex items-center justify-between border-t bg-muted/20 px-5 py-3">
-            <div className="min-h-5 text-sm text-destructive">
-              {error ? error : null}
-            </div>
+            <div className="min-h-5 text-sm text-destructive">{error || null}</div>
 
             <div className="flex items-center gap-2">
               <Button
@@ -285,7 +244,7 @@ export function TaskDialog({ trigger, ...props }: TaskDialogProps) {
                     : "Creating..."
                   : isEditing
                     ? "Save changes"
-                    : "Create task"}
+                    : "Create project"}
               </Button>
             </div>
           </div>
@@ -295,4 +254,4 @@ export function TaskDialog({ trigger, ...props }: TaskDialogProps) {
   );
 }
 
-export { TaskDialog as CreateTaskDialog };
+export { ProjectDialog as CreateProjectDialog };

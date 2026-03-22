@@ -7,6 +7,7 @@ import {
   ChevronsUpDown,
   Check,
   Building2,
+  FolderKanban,
   Users,
   Plus,
 } from "lucide-react";
@@ -22,6 +23,9 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarMenuSub,
+  SidebarMenuSubButton,
+  SidebarMenuSubItem,
 } from "@/components/ui/sidebar";
 import {
   DropdownMenu,
@@ -38,8 +42,50 @@ import type { AuthState } from "@/lib/auth-context";
 import type { OrganizationId } from "@/lib/schemas";
 import { organizationsAtom } from "@/lib/atoms/organizations";
 import { isTaskViewMode } from "@/components/tasks/task-views";
+import { cn } from "@/lib/utils";
 
-const navItems = [{ title: "Tasks", icon: ClipboardList }] as const;
+const teamColorThemes = [
+  {
+    group:
+      "bg-emerald-500/10 text-emerald-700 ring-1 ring-emerald-500/20 hover:bg-emerald-500/10 hover:text-emerald-700 active:bg-emerald-500/10 active:text-emerald-700 dark:text-emerald-300 dark:hover:bg-emerald-500/10 dark:hover:text-emerald-300",
+    icon: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300",
+    sub: "border-emerald-500/25",
+  },
+  {
+    group:
+      "bg-sky-500/10 text-sky-700 ring-1 ring-sky-500/20 hover:bg-sky-500/10 hover:text-sky-700 active:bg-sky-500/10 active:text-sky-700 dark:text-sky-300 dark:hover:bg-sky-500/10 dark:hover:text-sky-300",
+    icon: "bg-sky-500/15 text-sky-700 dark:text-sky-300",
+    sub: "border-sky-500/25",
+  },
+  {
+    group:
+      "bg-amber-500/10 text-amber-700 ring-1 ring-amber-500/20 hover:bg-amber-500/10 hover:text-amber-700 active:bg-amber-500/10 active:text-amber-700 dark:text-amber-300 dark:hover:bg-amber-500/10 dark:hover:text-amber-300",
+    icon: "bg-amber-500/15 text-amber-700 dark:text-amber-300",
+    sub: "border-amber-500/25",
+  },
+  {
+    group:
+      "bg-rose-500/10 text-rose-700 ring-1 ring-rose-500/20 hover:bg-rose-500/10 hover:text-rose-700 active:bg-rose-500/10 active:text-rose-700 dark:text-rose-300 dark:hover:bg-rose-500/10 dark:hover:text-rose-300",
+    icon: "bg-rose-500/15 text-rose-700 dark:text-rose-300",
+    sub: "border-rose-500/25",
+  },
+  {
+    group:
+      "bg-violet-500/10 text-violet-700 ring-1 ring-violet-500/20 hover:bg-violet-500/10 hover:text-violet-700 active:bg-violet-500/10 active:text-violet-700 dark:text-violet-300 dark:hover:bg-violet-500/10 dark:hover:text-violet-300",
+    icon: "bg-violet-500/15 text-violet-700 dark:text-violet-300",
+    sub: "border-violet-500/25",
+  },
+] as const;
+
+const getTeamTheme = (value: string) => {
+  let hash = 0;
+
+  for (let index = 0; index < value.length; index += 1) {
+    hash = (hash * 31 + value.charCodeAt(index)) >>> 0;
+  }
+
+  return teamColorThemes[hash % teamColorThemes.length] ?? teamColorThemes[0];
+};
 
 const teamsAtom = (orgId?: OrganizationId) =>
   PallyClient.query("teams", "listTeams", {
@@ -56,6 +102,7 @@ export function AppSidebar({
   const router = useRouter();
   const params = useParams({ from: "/org/$orgSlug" });
   const currentOrgSlug = params.orgSlug;
+  const currentPath = router.state.location.pathname;
   const taskTab = isTaskViewMode(router.state.location.search.tab)
     ? router.state.location.search.tab
     : "table";
@@ -171,20 +218,29 @@ export function AppSidebar({
           <SidebarGroupLabel>Navigation</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {navItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
-                    <Link
-                      to="/org/$orgSlug/tasks"
-                      params={{ orgSlug: currentOrgSlug }}
-                      search={{ tab: taskTab, status: [], priority: [], projectId: null }}
-                    >
-                      <item.icon className="size-4" />
-                      <span>{item.title}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild>
+                  <Link
+                    to="/org/$orgSlug/tasks"
+                    params={{ orgSlug: currentOrgSlug }}
+                    search={{ tab: taskTab, status: [], priority: [], projectId: null }}
+                  >
+                    <ClipboardList className="size-4" />
+                    <span>Tasks</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild>
+                  <Link
+                    to="/org/$orgSlug/projects"
+                    params={{ orgSlug: currentOrgSlug }}
+                  >
+                    <FolderKanban className="size-4" />
+                    <span>Projects</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
@@ -226,19 +282,65 @@ export function AppSidebar({
                 )}
                 {teams.map((team) => (
                   <SidebarMenuItem key={team.id}>
-                    <SidebarMenuButton asChild>
-                      <Link
-                        to="/org/$orgSlug/team/$teamSlug/tasks"
-                        params={{
-                          orgSlug: currentOrgSlug,
-                          teamSlug: team.id,
-                        }}
-                        search={{ tab: taskTab, status: [], priority: [], projectId: null }}
-                      >
-                        <Users className="size-4" />
-                        <span>{team.name}</span>
-                      </Link>
-                    </SidebarMenuButton>
+                    {(() => {
+                      const theme = getTeamTheme(team.id);
+
+                      return (
+                        <>
+                          <SidebarMenuButton className={cn("mb-1", theme.group)}>
+                            <span
+                              className={cn(
+                                "flex size-5 items-center justify-center rounded-md",
+                                theme.icon,
+                              )}
+                            >
+                              <Users className="size-3.5" />
+                            </span>
+                            <span>{team.name}</span>
+                          </SidebarMenuButton>
+                          <SidebarMenuSub className={theme.sub}>
+                            <SidebarMenuSubItem>
+                              <SidebarMenuSubButton
+                                asChild
+                                isActive={currentPath === `/org/${currentOrgSlug}/team/${team.id}/tasks`}
+                              >
+                                <Link
+                                  to="/org/$orgSlug/team/$teamSlug/tasks"
+                                  params={{
+                                    orgSlug: currentOrgSlug,
+                                    teamSlug: team.id,
+                                  }}
+                                  search={{ tab: taskTab, status: [], priority: [], projectId: null }}
+                                >
+                                  <span>Tasks</span>
+                                </Link>
+                              </SidebarMenuSubButton>
+                            </SidebarMenuSubItem>
+                            <SidebarMenuSubItem>
+                              <SidebarMenuSubButton
+                                asChild
+                                isActive={
+                                  currentPath === `/org/${currentOrgSlug}/team/${team.id}/projects` ||
+                                  currentPath.startsWith(
+                                    `/org/${currentOrgSlug}/team/${team.id}/projects/`,
+                                  )
+                                }
+                              >
+                                <Link
+                                  to="/org/$orgSlug/team/$teamSlug/projects"
+                                  params={{
+                                    orgSlug: currentOrgSlug,
+                                    teamSlug: team.id,
+                                  }}
+                                >
+                                  <span>Projects</span>
+                                </Link>
+                              </SidebarMenuSubButton>
+                            </SidebarMenuSubItem>
+                          </SidebarMenuSub>
+                        </>
+                      );
+                    })()}
                   </SidebarMenuItem>
                 ))}
               </SidebarMenu>
