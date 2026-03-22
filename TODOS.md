@@ -50,7 +50,8 @@ Goal: Connect TanStack DB to the Effect API and display data in the UI.
 - [x] Create Effect Atom HttpApi client (replaces TanStack DB)
 - [x] Build login/logout UI
 - [x] Build sidebar navigation with Better Auth teams/organizations
-- [ ] Add teams to sidebar. Break that down. Each team should have its own tasks. 
+- [x] Update dashboard url to /{org}/tasks
+- [ ] Add teams to sidebar. Break that down. Each team should have its own tasks. (/{org}/team/{team}/tasks) 
 - [ ] Build list/board view components for tasks
 - [ ] Display live data from the API in the web app
 

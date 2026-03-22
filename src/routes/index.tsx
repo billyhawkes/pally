@@ -1,7 +1,19 @@
-import { createFileRoute } from "@tanstack/react-router"
+import { createFileRoute, redirect } from "@tanstack/react-router"
 import { Button } from "@/components/ui/button"
+import { getSession } from "@/lib/get-session"
+import { getFirstOrgSlug } from "@/lib/resolve-org"
 
 export const Route = createFileRoute("/")({
+  beforeLoad: async () => {
+    const session = await getSession()
+    if (session) {
+      const slug = await getFirstOrgSlug()
+      throw redirect({
+        to: "/$orgSlug/tasks",
+        params: { orgSlug: slug ?? "personal" },
+      })
+    }
+  },
   component: HomePage,
 })
 

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import { Link, useRouter } from "@tanstack/react-router"
+import { Link, useRouter, useParams } from "@tanstack/react-router"
 import {
   ClipboardList,
   LogOut,
@@ -31,7 +31,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { authClient } from "@/lib/auth-client"
 import type { AuthState } from "@/lib/auth-context"
 
-const navItems = [{ title: "Tasks", url: "/tasks" as const, icon: ClipboardList }]
+const navItems = [{ title: "Tasks", icon: ClipboardList }] as const
 
 type OrganizationData = {
   id: string
@@ -48,6 +48,8 @@ export function AppSidebar({
   auth: NonNullable<AuthState["session"]>
 }) {
   const router = useRouter()
+  const params = useParams({ from: "/_authenticated/$orgSlug" })
+  const currentOrgSlug = params.orgSlug
   const [organizations, setOrganizations] = useState<OrganizationData[]>([])
   const [activeOrg, setActiveOrg] = useState<OrganizationData | null>(null)
 
@@ -77,7 +79,8 @@ export function AppSidebar({
       organizationId: org?.id ?? null,
     })
     setActiveOrg(org)
-    router.invalidate()
+    const slug = org?.slug ?? "personal"
+    router.navigate({ to: "/$orgSlug/tasks", params: { orgSlug: slug } })
   }
 
   async function handleSignOut() {
@@ -154,7 +157,7 @@ export function AppSidebar({
               {navItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
-                    <Link to={item.url}>
+                    <Link to="/$orgSlug/tasks" params={{ orgSlug: currentOrgSlug }}>
                       <item.icon className="size-4" />
                       <span>{item.title}</span>
                     </Link>
