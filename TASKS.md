@@ -77,7 +77,7 @@ Goal: Connect Github with the Effect API with two-way syncing.
 Goal: Grow the featureset of Pally.
 
 - [ ] Organization members page and CRUD
-- [ ] Team members page and CRUD
+- [ ] Team members page and CRUD (changing colors too)
 - [ ] Task types (eg. bug, feature, chore, etc.)
 - [ ] Comments (with sync)
 - [ ] CompletedAt date

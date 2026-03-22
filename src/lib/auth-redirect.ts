@@ -6,6 +6,14 @@ export function sanitizeRedirect(url: unknown): string {
   return url;
 }
 
+export function createAuthCallbackUrl(
+  authPath: "/auth/login" | "/auth/signup",
+  redirect: string,
+) {
+  const safeRedirect = sanitizeRedirect(redirect);
+  return `${authPath}?redirect=${encodeURIComponent(safeRedirect)}`;
+}
+
 export async function resolvePostAuthRedirect(redirect: string) {
   const safeRedirect = sanitizeRedirect(redirect);
 

@@ -1,8 +1,13 @@
-import { Link, createFileRoute } from "@tanstack/react-router";
+import { Link, createFileRoute, redirect } from "@tanstack/react-router";
 import { useEffect, useState, type FormEvent } from "react";
 import { Github, LoaderCircle } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
-import { resolvePostAuthRedirect, sanitizeRedirect } from "@/lib/auth-redirect";
+import {
+  createAuthCallbackUrl,
+  resolvePostAuthRedirect,
+  sanitizeRedirect,
+} from "@/lib/auth-redirect";
+import { getSession } from "@/lib/client-auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -19,6 +24,13 @@ export const Route = createFileRoute("/auth/signup")({
   validateSearch: (search: Record<string, unknown>) => ({
     redirect: sanitizeRedirect(search.redirect),
   }),
+  beforeLoad: async ({ search }) => {
+    const session = await getSession();
+
+    if (session) {
+      throw redirect({ href: await resolvePostAuthRedirect(search.redirect) });
+    }
+  },
   component: SignupPage,
 });
 
@@ -112,8 +124,8 @@ function SignupPage() {
 
     const result = await authClient.signIn.social({
       provider: "github",
-      callbackURL: search.redirect,
-      newUserCallbackURL: search.redirect,
+      callbackURL: createAuthCallbackUrl("/auth/signup", search.redirect),
+      newUserCallbackURL: createAuthCallbackUrl("/auth/signup", search.redirect),
     });
 
     setGithubLoading(false);
