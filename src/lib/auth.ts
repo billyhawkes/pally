@@ -3,6 +3,7 @@ import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { organization, openAPI } from "better-auth/plugins";
 import { tanstackStartCookies } from "better-auth/tanstack-start";
 import { db } from "@/db/layer";
+import { seedOrganizationData } from "@/db/seed";
 
 export const auth = betterAuth({
   database: drizzleAdapter(db, {
@@ -18,6 +19,14 @@ export const auth = betterAuth({
       membershipLimit: 100,
       teams: {
         enabled: true,
+      },
+      organizationHooks: {
+        afterCreateOrganization: async ({ organization, user }) => {
+          await seedOrganizationData({
+            organizationId: organization.id,
+            userId: user.id,
+          });
+        },
       },
     }),
     openAPI({

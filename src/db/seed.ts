@@ -1,93 +1,112 @@
-import { Effect } from "effect"
-import { DB } from "./layer"
-import * as schema from "./schema"
-import { dbQuery } from "./query"
+import { db } from "./layer"
+import { team, teamMember } from "./auth-schema"
+import { projects, tasks } from "./schema"
 
-export const seed = Effect.gen(function* () {
-  const db = yield* DB
+type SeedOrganizationDataInput = {
+  organizationId: string
+  userId: string
+}
 
-  // Check if data already exists
-  const existingProjects = yield* dbQuery(
-    db.select({ id: schema.projects.id }).from(schema.projects).limit(1)
-  )
+export async function seedOrganizationData({
+  organizationId,
+  userId,
+}: SeedOrganizationDataInput) {
+  const now = new Date()
 
-  if (existingProjects.length > 0) {
-    return
-  }
+  const productTeamId = crypto.randomUUID()
+  const engineeringTeamId = crypto.randomUUID()
+  const workspaceProjectId = crypto.randomUUID()
+  const githubProjectId = crypto.randomUUID()
 
-  yield* Effect.log("Seeding database...")
-
-  yield* dbQuery(
-    db.insert(schema.projects).values([
+  await db.transaction(async (tx) => {
+    await tx.insert(team).values([
       {
-        id: "project-1",
-        name: "Pally",
-        description: "A web-first project and task application with Github sync",
-        orgId: null,
+        id: productTeamId,
+        name: "Product",
+        organizationId,
+        createdAt: now,
+        updatedAt: now,
       },
       {
-        id: "project-2",
-        name: "Website",
-        description: "Company website redesign",
-        orgId: null,
+        id: engineeringTeamId,
+        name: "Engineering",
+        organizationId,
+        createdAt: now,
+        updatedAt: now,
       },
     ])
-  )
 
-  yield* dbQuery(
-    db.insert(schema.tasks).values([
+    await tx.insert(teamMember).values([
       {
-        id: "task-1",
-        title: "Set up project structure",
-        description: "Initialize the project with Effect and TanStack Start",
-        status: "done",
-        priority: "high",
-        orgId: null,
-        projectId: null,
+        id: crypto.randomUUID(),
+        teamId: productTeamId,
+        userId,
+        createdAt: now,
       },
       {
-        id: "task-2",
-        title: "Implement authentication",
-        description: "Set up Better Auth with organizations and teams",
-        status: "in_progress",
-        priority: "urgent",
-        orgId: null,
-        projectId: "project-1",
+        id: crypto.randomUUID(),
+        teamId: engineeringTeamId,
+        userId,
+        createdAt: now,
+      },
+    ])
+
+    await tx.insert(projects).values([
+      {
+        id: workspaceProjectId,
+        name: "Workspace setup",
+        description: "Shape your first workflow, owners, and project structure.",
+        orgId: organizationId,
       },
       {
-        id: "task-3",
-        title: "Create task board view",
-        description: null,
+        id: githubProjectId,
+        name: "GitHub sync rollout",
+        description: "Prepare projects and tasks for the upcoming GitHub integration.",
+        orgId: organizationId,
+      },
+    ])
+
+    await tx.insert(tasks).values([
+      {
+        id: crypto.randomUUID(),
+        title: "Review the example workspace",
+        description: "Use these starter records to get a feel for org, team, and project scoped work.",
         status: "todo",
         priority: "medium",
-        orgId: null,
-        projectId: "project-1",
+        orgId: organizationId,
+        projectId: null,
+        teamId: null,
+      },
+      {
+        id: crypto.randomUUID(),
+        title: "Define the first delivery milestones",
+        description: "Capture the initial roadmap for the workspace setup project.",
+        status: "in_progress",
+        priority: "high",
+        orgId: organizationId,
+        projectId: workspaceProjectId,
+        teamId: productTeamId,
+      },
+      {
+        id: crypto.randomUUID(),
+        title: "Connect the team workflow to GitHub",
+        description: "Outline how issue sync should map into projects and tasks.",
+        status: "todo",
+        priority: "high",
+        orgId: organizationId,
+        projectId: githubProjectId,
+        teamId: engineeringTeamId,
+      },
+      {
+        id: crypto.randomUUID(),
+        title: "Triage the first org-wide backlog",
+        description: "Sort the shared backlog before work is split into team-specific queues.",
+        status: "todo",
+        priority: "urgent",
+        orgId: organizationId,
+        projectId: workspaceProjectId,
+        teamId: null,
       },
     ])
-  )
-
-  yield* dbQuery(
-    db.insert(schema.views).values([
-      {
-        id: "view-1",
-        name: "All Tasks",
-        orgId: null,
-        filters: { status: null, priority: null, projectId: null },
-      },
-      {
-        id: "view-2",
-        name: "High Priority",
-        orgId: null,
-        filters: { status: null, priority: ["urgent", "high"], projectId: null },
-      },
-      {
-        id: "view-3",
-        name: "In Progress",
-        orgId: null,
-        filters: { status: ["in_progress"], priority: null, projectId: null },
-      },
-    ])
-  )
-
-  yield* Effect.log("Database seeded.")
-})
+  })
+}

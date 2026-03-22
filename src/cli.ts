@@ -4,7 +4,6 @@ import { Console, Effect, Layer, Option } from "effect"
 import { TaskService, ProjectService, ViewService } from "./lib/services/index"
 import { TaskId, ProjectId, ViewId, TaskStatus, TaskPriority } from "./lib/schemas"
 import { DBLive } from "./db/layer"
-import { seed } from "./db/seed"
 
 // Task list command with filters
 const taskListStatus = Flag.string("status").pipe(
@@ -250,7 +249,4 @@ const servicesWithDB = TaskService.layer.pipe(
 )
 const mainLayer = Layer.merge(servicesWithDB, BunServices.layer)
 
-Effect.gen(function* () {
-  yield* seed
-  yield* program
-}).pipe(Effect.provide(mainLayer), BunRuntime.runMain)
+Effect.suspend(() => program).pipe(Effect.provide(mainLayer), BunRuntime.runMain)
