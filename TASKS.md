@@ -85,3 +85,5 @@ Goal: Grow the featureset of Pally.
 - [ ] Views (save filters as a view to view later)
 - [ ] Marketing frontend page
 - [ ] OpenTelemetry integration
+- [ ] Automated service and end-to-end testing
+- [ ] Documentation (self hosted, sync, etc.)

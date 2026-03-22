@@ -9,6 +9,7 @@ import {
   LayoutDashboard,
   Server,
   Sparkles,
+  Star,
   Users,
 } from "lucide-react";
 
@@ -21,6 +22,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { getTeamTheme, teamColorThemes } from "@/lib/team-color-theme";
 const featureCards = [
   {
     icon: Server,
@@ -105,7 +107,38 @@ const faqItems = [
   },
 ];
 
+const heroThemes = [teamColorThemes[0], teamColorThemes[2], teamColorThemes[3]];
+
+const spotlightTheme = teamColorThemes[0] ?? getTeamTheme("workspace");
+
 export const Route = createFileRoute("/")({
+  // DO NOT ADD A beforeLoad redirect here.
+  loader: async () => {
+    try {
+      const response = await fetch(
+        "https://api.github.com/repos/billyhawkes/pally",
+        {
+          headers: {
+            Accept: "application/vnd.github+json",
+          },
+        },
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to load repo metadata");
+      }
+
+      const data = (await response.json()) as { stargazers_count?: number };
+
+      return {
+        githubStars: data.stargazers_count ?? null,
+      };
+    } catch {
+      return {
+        githubStars: null,
+      };
+    }
+  },
   head: () => ({
     meta: [
       { title: "Pally | Open-source project planning for self-hosted teams" },
@@ -120,15 +153,16 @@ export const Route = createFileRoute("/")({
 });
 
 function HomePage() {
+  const { githubStars } = Route.useLoaderData();
+
   return (
     <main className="relative overflow-x-hidden bg-background text-foreground">
-      <div className="absolute inset-0 -z-10 bg-gradient-to-b from-background via-muted/30 to-background" />
-      <div className="absolute left-1/2 top-0 -z-10 size-[36rem] -translate-x-1/2 rounded-full bg-primary/10 blur-3xl" />
-      <div className="absolute left-0 top-96 -z-10 size-80 rounded-full bg-secondary blur-3xl" />
+      <div className="absolute inset-0 -z-10 bg-gradient-to-br from-background via-muted/30 to-background" />
+      <div className="absolute inset-x-0 top-0 -z-10 h-[32rem] bg-[radial-gradient(circle_at_top,_hsl(var(--muted))_0%,_transparent_70%)]" />
 
       <div className="fixed inset-x-0 top-4 z-30 px-6 sm:px-8 lg:px-10">
         <div className="mx-auto w-full max-w-7xl">
-          <header className="flex flex-wrap items-center justify-between gap-4 rounded-[2rem] border bg-background/70 px-4 py-3 shadow-sm backdrop-blur-xl sm:px-5">
+          <header className="flex flex-wrap items-center justify-between gap-4 rounded-[2rem] border border-border/60 bg-background/75 px-4 py-3 shadow-sm backdrop-blur-xl sm:px-5">
             <div className="flex items-center gap-3">
               <div className="flex size-10 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-sm">
                 <FolderKanban className="size-5" />
@@ -152,6 +186,10 @@ function HomePage() {
                 >
                   <Github data-icon="inline-start" />
                   GitHub
+                  <span className="ml-1 inline-flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
+                    <Star className="size-3" />
+                    {formatCompactNumber(githubStars)}
+                  </span>
                 </a>
               </Button>
               <Button variant="ghost" asChild>
@@ -173,7 +211,10 @@ function HomePage() {
         <section className="grid flex-1 gap-12 py-12 lg:grid-cols-[minmax(0,1.02fr)_minmax(0,0.98fr)] lg:items-center lg:py-20">
           <div className="flex max-w-2xl flex-col gap-8">
             <div className="flex flex-col gap-6">
-              <Badge variant="secondary" className="w-fit">
+              <Badge
+                variant="secondary"
+                className={`w-fit ${spotlightTheme.soft}`}
+              >
                 <Server data-icon="inline-start" />
                 Open source, free forever, self-host first
               </Badge>
@@ -204,51 +245,32 @@ function HomePage() {
             </div>
 
             <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-              {proofPoints.map((point) => (
-                <div
-                  key={point}
-                  className="flex items-center gap-2 rounded-2xl border bg-background/75 px-4 py-3 text-sm text-muted-foreground shadow-sm"
-                >
-                  <CheckCircle2 className="size-4 text-foreground" />
-                  <span>{point}</span>
-                </div>
-              ))}
+              {proofPoints.map((point, index) => {
+                const theme =
+                  heroThemes[index % heroThemes.length] ?? spotlightTheme;
+
+                return (
+                  <div
+                    key={point}
+                    className="flex items-center gap-2 rounded-2xl border bg-background/80 px-4 py-3 text-sm text-muted-foreground shadow-sm backdrop-blur"
+                  >
+                    <CheckCircle2
+                      className={`size-4 shrink-0 ${theme.soft.split(" ")[1]}`}
+                    />
+                    <span>{point}</span>
+                  </div>
+                );
+              })}
             </div>
           </div>
 
           <div className="relative lg:pl-6">
-            <div className="absolute -left-4 top-10 hidden h-32 w-32 rounded-full bg-primary/10 blur-3xl lg:block" />
-            <div className="absolute -right-4 bottom-8 hidden h-32 w-32 rounded-full bg-secondary blur-3xl lg:block" />
-
-            <div className="relative overflow-hidden rounded-[2rem] border bg-background/90 p-3 shadow-2xl shadow-foreground/5 ring-1 ring-foreground/10 backdrop-blur">
+            <div className="relative overflow-hidden rounded-[2rem] border border-border/60 bg-background/90 p-3 shadow-2xl shadow-foreground/5 ring-1 ring-foreground/10 backdrop-blur">
               <img
                 src="/banner.png"
                 alt="Pally workspace preview"
                 className="h-[18rem] w-full rounded-[1.5rem] object-cover object-left-top sm:h-[24rem] lg:h-[32rem]"
               />
-            </div>
-
-            <div className="mt-4 grid gap-4 lg:grid-cols-[minmax(0,1fr)_14rem]">
-              <div className="overflow-hidden rounded-[1.75rem] border bg-background p-2 shadow-lg shadow-foreground/5">
-                <img
-                  src="/banner.png"
-                  alt="Pally task and project views"
-                  className="h-40 w-full rounded-[1.25rem] object-cover object-center sm:h-48"
-                />
-              </div>
-              <div className="rounded-[1.75rem] border bg-muted/40 p-5 shadow-sm">
-                <div className="flex flex-col gap-3">
-                  <Badge variant="secondary" className="w-fit">
-                    Self-host ready
-                  </Badge>
-                  <p className="text-sm font-medium">Local setup is simple</p>
-                  <div className="flex flex-col gap-2 text-sm text-muted-foreground">
-                    <p>`docker compose up -d`</p>
-                    <p>`bun run dev`</p>
-                    <p>`bun run cli task list`</p>
-                  </div>
-                </div>
-              </div>
             </div>
           </div>
         </section>
@@ -269,19 +291,26 @@ function HomePage() {
           </div>
 
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-            {featureCards.map(({ icon: Icon, title, description }) => (
-              <Card key={title} className="h-full bg-background/80 shadow-sm">
-                <CardHeader className="flex flex-col gap-4">
-                  <div className="flex size-12 items-center justify-center rounded-2xl bg-muted text-foreground">
-                    <Icon className="size-5" />
-                  </div>
-                  <div className="flex flex-col gap-2">
-                    <CardTitle>{title}</CardTitle>
-                    <CardDescription>{description}</CardDescription>
-                  </div>
-                </CardHeader>
-              </Card>
-            ))}
+            {featureCards.map(({ icon: Icon, title, description }, index) => {
+              const theme =
+                heroThemes[index % heroThemes.length] ?? spotlightTheme;
+
+              return (
+                <Card key={title} className="h-full bg-background/85 shadow-sm">
+                  <CardHeader className="flex flex-col gap-4">
+                    <div
+                      className={`flex size-12 items-center justify-center rounded-2xl ${theme.icon}`}
+                    >
+                      <Icon className="size-5" />
+                    </div>
+                    <div className="flex flex-col gap-2">
+                      <CardTitle>{title}</CardTitle>
+                      <CardDescription>{description}</CardDescription>
+                    </div>
+                  </CardHeader>
+                </Card>
+              );
+            })}
           </div>
         </section>
 
@@ -313,19 +342,26 @@ function HomePage() {
           </Card>
 
           <div className="grid gap-4">
-            {workflowSteps.map((step, index) => (
-              <Card key={step.title} className="bg-background/80 shadow-sm">
-                <CardHeader className="grid gap-4 sm:grid-cols-[auto_minmax(0,1fr)] sm:items-start">
-                  <div className="flex size-12 items-center justify-center rounded-2xl bg-muted font-heading text-lg font-semibold">
-                    0{index + 1}
-                  </div>
-                  <div className="flex flex-col gap-2">
-                    <CardTitle>{step.title}</CardTitle>
-                    <CardDescription>{step.body}</CardDescription>
-                  </div>
-                </CardHeader>
-              </Card>
-            ))}
+            {workflowSteps.map((step, index) => {
+              const theme =
+                heroThemes[index % heroThemes.length] ?? spotlightTheme;
+
+              return (
+                <Card key={step.title} className="bg-background/85 shadow-sm">
+                  <CardHeader className="grid gap-4 sm:grid-cols-[auto_minmax(0,1fr)] sm:items-start">
+                    <div
+                      className={`flex size-12 items-center justify-center rounded-2xl font-heading text-lg font-semibold ${theme.icon}`}
+                    >
+                      0{index + 1}
+                    </div>
+                    <div className="flex flex-col gap-2">
+                      <CardTitle>{step.title}</CardTitle>
+                      <CardDescription>{step.body}</CardDescription>
+                    </div>
+                  </CardHeader>
+                </Card>
+              );
+            })}
           </div>
         </section>
 
@@ -343,17 +379,19 @@ function HomePage() {
           </div>
 
           <div className="grid gap-4 lg:grid-cols-2">
-            {faqItems.map((item) => (
-              <Card
-                key={item.question}
-                className="h-full bg-background/80 shadow-sm"
-              >
-                <CardHeader className="flex flex-col gap-2">
-                  <CardTitle className="text-xl">{item.question}</CardTitle>
-                  <CardDescription>{item.answer}</CardDescription>
-                </CardHeader>
-              </Card>
-            ))}
+            {faqItems.map((item) => {
+              return (
+                <Card
+                  key={item.question}
+                  className="h-full bg-background/85 shadow-sm"
+                >
+                  <CardHeader className="flex flex-col gap-2">
+                    <CardTitle className="text-xl">{item.question}</CardTitle>
+                    <CardDescription>{item.answer}</CardDescription>
+                  </CardHeader>
+                </Card>
+              );
+            })}
           </div>
         </section>
 
@@ -395,22 +433,13 @@ function HomePage() {
   );
 }
 
-function MetricCard({
-  label,
-  value,
-  detail,
-}: {
-  label: string;
-  value: string;
-  detail: string;
-}) {
-  return (
-    <div className="rounded-2xl border bg-background px-4 py-4 shadow-sm">
-      <p className="text-sm text-muted-foreground">{label}</p>
-      <p className="mt-3 font-heading text-3xl font-semibold tracking-tight">
-        {value}
-      </p>
-      <p className="mt-1 text-sm text-muted-foreground">{detail}</p>
-    </div>
-  );
+function formatCompactNumber(value: number | null) {
+  if (value === null) {
+    return "Open repo";
+  }
+
+  return new Intl.NumberFormat("en", {
+    notation: "compact",
+    maximumFractionDigits: value >= 1000 ? 1 : 0,
+  }).format(value);
 }

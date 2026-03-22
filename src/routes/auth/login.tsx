@@ -2,7 +2,7 @@ import { Link, createFileRoute } from "@tanstack/react-router"
 import { useEffect, useState, type FormEvent } from "react"
 import { Github, LoaderCircle } from "lucide-react"
 import { authClient } from "@/lib/auth-client"
-import { sanitizeRedirect } from "@/lib/auth-redirect"
+import { resolvePostAuthRedirect, sanitizeRedirect } from "@/lib/auth-redirect"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -88,7 +88,7 @@ function LoginPage() {
       return
     }
 
-    window.location.assign(search.redirect)
+    window.location.assign(await resolvePostAuthRedirect(search.redirect))
   }
 
   const handleGithubSignIn = async () => {
