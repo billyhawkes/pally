@@ -8,7 +8,7 @@ import {
   type SortingState,
   useReactTable,
 } from "@tanstack/react-table";
-import { ArrowUpDown, Ellipsis } from "lucide-react";
+import { ArrowUpDown, Ellipsis, Github } from "lucide-react";
 import type { Project, TeamId } from "@/lib/schemas";
 import { ProjectActionsMenuContent } from "@/components/projects/project-actions-menu";
 import {
@@ -31,6 +31,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { CreateProjectDialog } from "@/components/projects/create-project-dialog";
+import { Badge } from "@/components/ui/badge";
 import { formatDate } from "@/components/tasks/task-view-utils";
 
 type ProjectTableViewProps = {
@@ -133,6 +134,43 @@ export function ProjectTableView({
                 event.stopPropagation();
               }}
             />
+          );
+        },
+      },
+      {
+        accessorKey: "githubRepositoryFullName",
+        header: ({ column }) => (
+          <Button
+            type="button"
+            variant="ghost"
+            className="-ml-3"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            Repository
+            <ArrowUpDown className="size-4" />
+          </Button>
+        ),
+        cell: ({ row }) => {
+          const repository = row.original.githubRepositoryFullName;
+
+          if (!repository) {
+            return <span className="text-sm text-muted-foreground">-</span>;
+          }
+
+          return (
+            <Badge asChild variant="outline" className="h-6 rounded-full px-2">
+              <a
+                href={`https://github.com/${repository}`}
+                target="_blank"
+                rel="noreferrer"
+                onClick={(event) => {
+                  event.stopPropagation();
+                }}
+              >
+                <Github className="size-3.5" />
+                {repository}
+              </a>
+            </Badge>
           );
         },
       },

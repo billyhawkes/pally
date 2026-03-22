@@ -76,3 +76,7 @@ Goal: Connect Github with the Effect API with two-way syncing.
 ## Phase 7: New features
 - [ ] Task types (eg. bug, feature, chore, etc.)
 - [ ] Comments (with sync)
+- [ ] CompletedAt date
+- [ ] Filtering based on date range
+- [ ] Views (save filters as a view to view later)
+- [ ] Marketing frontend page
