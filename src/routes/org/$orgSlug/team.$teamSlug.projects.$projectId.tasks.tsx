@@ -1,11 +1,11 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useAtomValue } from "@effect/atom-react";
 import { Button } from "@/components/ui/button";
-import type { OrganizationId, ProjectId, TaskFilters, TeamId } from "@/lib/schemas";
+import type { ProjectId, TaskFilters, TeamId } from "@/lib/schemas";
 import { organizationsAtom } from "@/lib/atoms/organizations";
 import { useProjectsAtom } from "@/lib/atoms/projects";
+import { teamsAtom } from "@/lib/atoms/teams";
 import { useTasksAtom } from "@/lib/atoms/tasks";
-import { PallyClient } from "@/lib/pally-client";
 import {
   applyTaskFilters,
   taskFilterSearchFromFilters,
@@ -28,13 +28,6 @@ export const Route = createFileRoute(
   }),
   component: TeamProjectTasksPage,
 });
-
-const teamsAtom = (organizationId?: OrganizationId | null) =>
-  PallyClient.query("teams", "listTeams", {
-    query: { organizationId: organizationId ?? undefined },
-    timeToLive: "5 minutes",
-    reactivityKeys: ["teams"],
-  });
 
 function TeamProjectTasksPage() {
   const { orgSlug, teamSlug, projectId } = Route.useParams();

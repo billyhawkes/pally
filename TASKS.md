@@ -72,3 +72,6 @@ Goal: Connect Github with the Effect API with two-way syncing.
 - [ ] Build Github integration
 - [ ] Build Github syncing
 - [ ] Allow linking projects to Github repos
+
+## Phase 7: New features
+- [ ] Task types (eg. bug, feature, chore, etc.)

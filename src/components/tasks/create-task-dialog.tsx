@@ -38,6 +38,7 @@ type CreateTaskDialogProps = {
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
   trigger?: ReactNode;
+  hideDefaultTrigger?: boolean;
   task?: never;
 };
 
@@ -46,6 +47,7 @@ type EditTaskDialogProps = {
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
   trigger?: ReactNode;
+  hideDefaultTrigger?: boolean;
   orgId?: never;
   teamId?: never;
   projectId?: never;
@@ -199,7 +201,7 @@ export function TaskDialog({ trigger, ...props }: TaskDialogProps) {
     <Dialog open={open} onOpenChange={handleOpenChange}>
       {trigger ? (
         <DialogTrigger asChild>{trigger}</DialogTrigger>
-      ) : !isEditing ? (
+      ) : !isEditing && !props.hideDefaultTrigger ? (
         <DialogTrigger asChild>
           <Button type="button">Create task</Button>
         </DialogTrigger>

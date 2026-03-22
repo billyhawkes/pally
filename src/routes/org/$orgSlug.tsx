@@ -6,6 +6,7 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
+import { CommandPalette } from "@/components/navigation/command-palette";
 import { HeaderBreadcrumbs } from "@/components/navigation/header-breadcrumbs";
 
 export const Route = createFileRoute("/org/$orgSlug")({
@@ -47,6 +48,7 @@ function OrgSlugLayout() {
           <div className="min-w-0 flex-1">
             <HeaderBreadcrumbs orgName={orgName} />
           </div>
+          <CommandPalette />
         </header>
         <Outlet />
       </SidebarInset>

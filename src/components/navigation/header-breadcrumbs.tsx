@@ -1,22 +1,15 @@
 import { useAtomValue } from "@effect/atom-react";
 import { useParams, useRouter } from "@tanstack/react-router";
 import { ChevronRight } from "lucide-react";
-import type { OrganizationId, ProjectId, TeamId } from "@/lib/schemas";
+import type { ProjectId, TeamId } from "@/lib/schemas";
 import { organizationsAtom } from "@/lib/atoms/organizations";
+import { teamsAtom } from "@/lib/atoms/teams";
 import { useProjectsAtom } from "@/lib/atoms/projects";
-import { PallyClient } from "@/lib/pally-client";
 import { Badge } from "@/components/ui/badge";
 
 type HeaderBreadcrumbsProps = {
   orgName: string;
 };
-
-const teamsAtom = (organizationId?: OrganizationId | null) =>
-  PallyClient.query("teams", "listTeams", {
-    query: { organizationId: organizationId ?? undefined },
-    timeToLive: "5 minutes",
-    reactivityKeys: ["teams"],
-  });
 
 export function HeaderBreadcrumbs({ orgName }: HeaderBreadcrumbsProps) {
   const params = useParams({ strict: false });

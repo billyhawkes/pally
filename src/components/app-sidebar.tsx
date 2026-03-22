@@ -35,12 +35,12 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Input } from "@/components/ui/input";
+import { CreateTeamDialog } from "@/components/teams/create-team-dialog";
+import { Button } from "@/components/ui/button";
 import { authClient } from "@/lib/auth-client";
-import { PallyClient } from "@/lib/pally-client";
 import type { AuthState } from "@/lib/auth-context";
-import type { OrganizationId } from "@/lib/schemas";
 import { organizationsAtom } from "@/lib/atoms/organizations";
+import { teamsAtom } from "@/lib/atoms/teams";
 import { isTaskViewMode } from "@/components/tasks/task-views";
 import { cn } from "@/lib/utils";
 
@@ -87,13 +87,6 @@ const getTeamTheme = (value: string) => {
   return teamColorThemes[hash % teamColorThemes.length] ?? teamColorThemes[0];
 };
 
-const teamsAtom = (orgId?: OrganizationId) =>
-  PallyClient.query("teams", "listTeams", {
-    query: { organizationId: orgId },
-    timeToLive: "5 minutes",
-    reactivityKeys: ["teams"],
-  });
-
 export function AppSidebar({
   auth,
 }: {
@@ -118,18 +111,6 @@ export function AppSidebar({
   const teams = teamsResult._tag === "Success" ? teamsResult.value : [];
 
   const [showCreateTeam, setShowCreateTeam] = useState(false);
-  const [newTeamName, setNewTeamName] = useState("");
-
-  async function handleCreateTeam(e: React.FormEvent) {
-    e.preventDefault();
-    if (!newTeamName.trim() || !activeOrg) return;
-    await authClient.organization.createTeam({
-      name: newTeamName.trim(),
-      organizationId: activeOrg.id,
-    });
-    setNewTeamName("");
-    setShowCreateTeam(false);
-  }
 
   async function handleSetActiveOrg(
     org: { id: string; slug: string | null } | null,
@@ -249,37 +230,18 @@ export function AppSidebar({
           <SidebarGroup>
             <SidebarGroupLabel className="flex items-center justify-between">
               <span>Teams</span>
-              <button
-                onClick={() => setShowCreateTeam(!showCreateTeam)}
-                className="rounded p-0.5 hover:bg-sidebar-accent"
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon-xs"
+                onClick={() => setShowCreateTeam(true)}
+                className="text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
               >
                 <Plus className="size-3.5" />
-              </button>
+              </Button>
             </SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
-                {showCreateTeam && (
-                  <SidebarMenuItem>
-                    <form
-                      onSubmit={handleCreateTeam}
-                      className="flex gap-1 px-2 py-1"
-                    >
-                      <Input
-                        value={newTeamName}
-                        onChange={(e) => setNewTeamName(e.target.value)}
-                        placeholder="Team name"
-                        className="h-7 text-sm"
-                        autoFocus
-                      />
-                      <button
-                        type="submit"
-                        className="rounded px-2 text-xs hover:bg-sidebar-accent"
-                      >
-                        Add
-                      </button>
-                    </form>
-                  </SidebarMenuItem>
-                )}
                 {teams.map((team) => (
                   <SidebarMenuItem key={team.id}>
                     {(() => {
@@ -348,6 +310,12 @@ export function AppSidebar({
           </SidebarGroup>
         )}
       </SidebarContent>
+
+      <CreateTeamDialog
+        open={showCreateTeam}
+        onOpenChange={setShowCreateTeam}
+        organizationId={activeOrg?.id ?? null}
+      />
 
       <SidebarFooter>
         <SidebarMenu>

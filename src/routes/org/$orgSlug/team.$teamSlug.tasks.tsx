@@ -1,9 +1,9 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useAtomValue } from "@effect/atom-react";
-import type { OrganizationId, TaskFilters, TeamId } from "@/lib/schemas";
+import type { TaskFilters, TeamId } from "@/lib/schemas";
 import { organizationsAtom } from "@/lib/atoms/organizations";
+import { teamsAtom } from "@/lib/atoms/teams";
 import { useTasksAtom } from "@/lib/atoms/tasks";
-import { PallyClient } from "@/lib/pally-client";
 import {
   applyTaskFilters,
   taskFiltersFromSearch,
@@ -23,13 +23,6 @@ export const Route = createFileRoute("/org/$orgSlug/team/$teamSlug/tasks")({
   }),
   component: TeamTasksPage,
 });
-
-const teamsAtom = (organizationId?: OrganizationId | null) =>
-  PallyClient.query("teams", "listTeams", {
-    query: { organizationId: organizationId ?? undefined },
-    timeToLive: "5 minutes",
-    reactivityKeys: ["teams"],
-  });
 
 function TeamTasksPage() {
   const { orgSlug, teamSlug } = Route.useParams();
@@ -76,7 +69,7 @@ function TeamTasksPage() {
   return (
     <div className="p-6 space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-2xl font-bold">Team Tasks</h1>
+        <h1 className="text-2xl font-bold">{teamName} Tasks</h1>
         <CreateTaskDialog
           orgId={orgId}
           teamId={teamId}

@@ -31,6 +31,7 @@ type CreateProjectDialogProps = {
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
   trigger?: ReactNode;
+  hideDefaultTrigger?: boolean;
   project?: never;
 };
 
@@ -39,6 +40,7 @@ type EditProjectDialogProps = {
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
   trigger?: ReactNode;
+  hideDefaultTrigger?: boolean;
   orgId?: never;
   breadcrumbs?: never;
 };
@@ -168,7 +170,7 @@ export function ProjectDialog({ trigger, ...props }: ProjectDialogProps) {
     <Dialog open={open} onOpenChange={handleOpenChange}>
       {trigger ? (
         <DialogTrigger asChild>{trigger}</DialogTrigger>
-      ) : !isEditing ? (
+      ) : !isEditing && !props.hideDefaultTrigger ? (
         <DialogTrigger asChild>
           <Button type="button">Create project</Button>
         </DialogTrigger>

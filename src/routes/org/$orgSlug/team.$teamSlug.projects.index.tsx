@@ -1,22 +1,14 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useAtomValue } from "@effect/atom-react";
-import type { OrganizationId } from "@/lib/schemas";
 import { organizationsAtom } from "@/lib/atoms/organizations";
 import { useProjectsAtom } from "@/lib/atoms/projects";
-import { PallyClient } from "@/lib/pally-client";
+import { teamsAtom } from "@/lib/atoms/teams";
 import { CreateProjectDialog } from "@/components/projects/create-project-dialog";
 import { ProjectTableView } from "@/components/projects/project-table-view";
 
 export const Route = createFileRoute("/org/$orgSlug/team/$teamSlug/projects/")({
   component: TeamProjectsPage,
 });
-
-const teamsAtom = (organizationId?: OrganizationId | null) =>
-  PallyClient.query("teams", "listTeams", {
-    query: { organizationId: organizationId ?? undefined },
-    timeToLive: "5 minutes",
-    reactivityKeys: ["teams"],
-  });
 
 function TeamProjectsPage() {
   const { orgSlug, teamSlug } = Route.useParams();
