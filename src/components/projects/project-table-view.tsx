@@ -10,15 +10,16 @@ import {
 } from "@tanstack/react-table";
 import { ArrowUpDown, Ellipsis } from "lucide-react";
 import type { Project, TeamId } from "@/lib/schemas";
+import { ProjectActionsMenuContent } from "@/components/projects/project-actions-menu";
+import {
+  ProjectContextMenu,
+  type ProjectContextMenuState,
+} from "@/components/projects/project-context-menu";
 import { deleteProjectAtom, updateProjectAtom } from "@/lib/atoms/projects";
 import { TeamBadgeSelect } from "@/components/projects/project-team-badge-select";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
@@ -54,6 +55,7 @@ export function ProjectTableView({
     { id: "updatedAt", desc: true },
   ]);
   const [editingProject, setEditingProject] = useState<Project | null>(null);
+  const [contextMenu, setContextMenu] = useState<ProjectContextMenuState | null>(null);
 
   const removeProject = (project: Project) => {
     remove({
@@ -176,19 +178,11 @@ export function ProjectTableView({
                   </Button>
                 </div>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-52">
-                <DropdownMenuLabel>{row.original.name}</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => setEditingProject(row.original)}>
-                  Edit project
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  variant="destructive"
-                  onClick={() => removeProject(row.original)}
-                >
-                  Delete project
-                </DropdownMenuItem>
-              </DropdownMenuContent>
+              <ProjectActionsMenuContent
+                project={row.original}
+                onEditProject={setEditingProject}
+                onRemoveProject={removeProject}
+              />
             </DropdownMenu>
           </div>
         ),
@@ -237,6 +231,14 @@ export function ProjectTableView({
               onClick={() => {
                 onOpenProject?.(row.original);
               }}
+              onContextMenu={(event) => {
+                event.preventDefault();
+                setContextMenu({
+                  project: row.original,
+                  x: event.clientX,
+                  y: event.clientY,
+                });
+              }}
             >
               {row.getVisibleCells().map((cell) => (
                 <TableCell
@@ -254,6 +256,13 @@ export function ProjectTableView({
           ))}
         </TableBody>
       </Table>
+
+      <ProjectContextMenu
+        contextMenu={contextMenu}
+        setContextMenu={setContextMenu}
+        onEditProject={setEditingProject}
+        onRemoveProject={removeProject}
+      />
 
       {editingProject ? (
         <CreateProjectDialog
