@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useAtomValue, useAtomSet } from "@effect/atom-react";
 import type { Task, TeamId } from "@/lib/schemas";
 import { organizationsAtom } from "@/lib/atoms/organizations";
@@ -8,14 +8,23 @@ import {
 } from "@/lib/atoms/tasks";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { TaskTableView } from "@/components/tasks/task-table-view";
+import {
+  isTaskViewMode,
+  TaskViews,
+  type TaskViewMode,
+} from "@/components/tasks/task-views";
 
 export const Route = createFileRoute("/org/$orgSlug/team/$teamSlug/tasks")({
+  validateSearch: (search: Record<string, unknown>) => ({
+    tab: isTaskViewMode(search.tab) ? search.tab : "table",
+  }),
   component: TeamTasksPage,
 });
 
 function TeamTasksPage() {
   const { orgSlug, teamSlug } = Route.useParams();
+  const search = Route.useSearch();
+  const navigate = useNavigate({ from: Route.fullPath });
   const organizations = useAtomValue(organizationsAtom);
   const orgId =
     organizations._tag === "Success"
@@ -44,11 +53,16 @@ function TeamTasksPage() {
           <p className="text-destructive">Failed to load tasks</p>
         )}
         {tasks._tag === "Success" &&
-          (filteredTasks?.length === 0 ? (
-            <p className="text-muted-foreground">No tasks yet.</p>
-          ) : (
-            <TaskTableView tasks={filteredTasks ?? []} />
-          ))}
+          <TaskViews
+            tasks={filteredTasks ?? []}
+            view={search.tab}
+            onViewChange={(tab: TaskViewMode) =>
+              navigate({
+                search: (prev) => ({ ...prev, tab }),
+                replace: true,
+              })
+            }
+          />}
       </div>
     </div>
   );

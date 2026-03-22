@@ -37,6 +37,7 @@ import { PallyClient } from "@/lib/pally-client";
 import type { AuthState } from "@/lib/auth-context";
 import type { OrganizationId } from "@/lib/schemas";
 import { organizationsAtom } from "@/lib/atoms/organizations";
+import { isTaskViewMode } from "@/components/tasks/task-views";
 
 const navItems = [{ title: "Tasks", icon: ClipboardList }] as const;
 
@@ -55,11 +56,12 @@ export function AppSidebar({
   const router = useRouter();
   const params = useParams({ from: "/org/$orgSlug" });
   const currentOrgSlug = params.orgSlug;
+  const taskTab = isTaskViewMode(router.state.location.search.tab)
+    ? router.state.location.search.tab
+    : "table";
 
   const orgsResult = useAtomValue(organizationsAtom);
   const organizations = orgsResult._tag === "Success" ? orgsResult.value : [];
-
-  console.log(orgsResult, currentOrgSlug);
 
   const activeOrg = currentOrgSlug
     ? (organizations.find((o) => o.slug === currentOrgSlug) ?? null)
@@ -92,6 +94,7 @@ export function AppSidebar({
     router.navigate({
       to: "/org/$orgSlug/tasks",
       params: { orgSlug: org.slug },
+      search: { tab: taskTab },
     });
   }
 
@@ -174,6 +177,7 @@ export function AppSidebar({
                     <Link
                       to="/org/$orgSlug/tasks"
                       params={{ orgSlug: currentOrgSlug }}
+                      search={{ tab: taskTab }}
                     >
                       <item.icon className="size-4" />
                       <span>{item.title}</span>
@@ -229,6 +233,7 @@ export function AppSidebar({
                           orgSlug: currentOrgSlug,
                           teamSlug: team.id,
                         }}
+                        search={{ tab: taskTab }}
                       >
                         <Users className="size-4" />
                         <span>{team.name}</span>

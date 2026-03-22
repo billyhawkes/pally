@@ -14,6 +14,10 @@ import { deleteTaskAtom, updateTaskAtom } from "@/lib/atoms/tasks"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import {
   Table,
   TableBody,
   TableCell,
@@ -21,28 +25,20 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-
-const statusColors: Record<Task["status"], string> = {
-  todo: "bg-gray-100 text-gray-800 hover:bg-gray-200",
-  in_progress: "bg-blue-100 text-blue-800 hover:bg-blue-200",
-  done: "bg-green-100 text-green-800 hover:bg-green-200",
-}
-
-const priorityColors: Record<Task["priority"], string> = {
-  low: "bg-gray-100 text-gray-600",
-  medium: "bg-yellow-100 text-yellow-800",
-  high: "bg-orange-100 text-orange-800",
-  urgent: "bg-red-100 text-red-800",
-}
-
-const statuses = ["todo", "in_progress", "done"] as const
-
-const formatDate = (value: Date) =>
-  new Intl.DateTimeFormat("en", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  }).format(value)
+import {
+  TaskActionsMenuContent,
+  TaskActionsMenuTriggerButton,
+} from "@/components/tasks/task-actions-menu"
+import {
+  TaskContextMenu,
+  type TaskContextMenuState,
+} from "@/components/tasks/task-context-menu"
+import {
+  formatDate,
+  priorityColors,
+  statusColors,
+  statusLabels,
+} from "@/components/tasks/task-view-utils"
 
 type TaskTableViewProps = {
   tasks: ReadonlyArray<Task>
@@ -59,6 +55,38 @@ export function TaskTableView({
   const [sorting, setSorting] = useState<SortingState>([
     { id: "updatedAt", desc: true },
   ])
+  const [contextMenu, setContextMenu] = useState<TaskContextMenuState | null>(null)
+
+  const moveTask = (task: Task, status: Task["status"]) => {
+    if (task.status === status) {
+      return
+    }
+
+    update({
+      params: { id: task.id },
+      payload: { status },
+      reactivityKeys: ["tasks"],
+    })
+  }
+
+  const removeTask = (task: Task) => {
+    remove({
+      params: { id: task.id },
+      reactivityKeys: ["tasks"],
+    })
+  }
+
+  const changePriority = (task: Task, priority: Task["priority"]) => {
+    if (task.priority === priority) {
+      return
+    }
+
+    update({
+      params: { id: task.id },
+      payload: { priority },
+      reactivityKeys: ["tasks"],
+    })
+  }
 
   const columns = useMemo<ColumnDef<Task>[]>(
     () => [
@@ -89,30 +117,11 @@ export function TaskTableView({
       {
         accessorKey: "status",
         header: "Status",
-        cell: ({ row }) => {
-          const nextStatus =
-            statuses[
-              (statuses.indexOf(row.original.status) + 1) % statuses.length
-            ]
-
-          return (
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              className={`rounded-full px-2 py-0 ${statusColors[row.original.status]}`}
-              onClick={() =>
-                update({
-                  params: { id: row.original.id },
-                  payload: { status: nextStatus },
-                  reactivityKeys: ["tasks"],
-                })
-              }
-            >
-              {row.original.status}
-            </Button>
-          )
-        },
+        cell: ({ row }) => (
+          <Badge className={statusColors[row.original.status]}>
+            {statusLabels[row.original.status]}
+          </Badge>
+        ),
       },
       {
         accessorKey: "priority",
@@ -148,24 +157,28 @@ export function TaskTableView({
         enableSorting: false,
         cell: ({ row }) => (
           <div className="flex justify-end">
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={() =>
-                remove({
-                  params: { id: row.original.id },
-                  reactivityKeys: ["tasks"],
-                })
-              }
-            >
-              Delete
-            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <div
+                  onClick={(event) => {
+                    event.stopPropagation()
+                  }}
+                >
+                  <TaskActionsMenuTriggerButton />
+                </div>
+              </DropdownMenuTrigger>
+              <TaskActionsMenuContent
+                task={row.original}
+                moveTask={moveTask}
+                changePriority={changePriority}
+                removeTask={removeTask}
+              />
+            </DropdownMenu>
           </div>
         ),
       },
     ],
-    [remove, update],
+    [changePriority, moveTask, removeTask],
   )
 
   const table = useReactTable({
@@ -202,7 +215,18 @@ export function TaskTableView({
         </TableHeader>
         <TableBody>
           {table.getRowModel().rows.map((row) => (
-            <TableRow key={row.id}>
+            <TableRow
+              key={row.id}
+              className="cursor-default"
+              onContextMenu={(event) => {
+                event.preventDefault()
+                setContextMenu({
+                  task: row.original,
+                  x: event.clientX,
+                  y: event.clientY,
+                })
+              }}
+            >
               {row.getVisibleCells().map((cell) => (
                 <TableCell key={cell.id}>
                   {flexRender(cell.column.columnDef.cell, cell.getContext())}
@@ -212,6 +236,14 @@ export function TaskTableView({
           ))}
         </TableBody>
       </Table>
+
+      <TaskContextMenu
+        contextMenu={contextMenu}
+        setContextMenu={setContextMenu}
+        moveTask={moveTask}
+        changePriority={changePriority}
+        removeTask={removeTask}
+      />
     </div>
   )
 }
