@@ -1,59 +1,59 @@
-import { createFileRoute, useRouter } from "@tanstack/react-router"
-import { useState, type FormEvent } from "react"
-import { authClient } from "@/lib/auth-client"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
+import { createFileRoute, useRouter } from "@tanstack/react-router";
+import { useState, type FormEvent } from "react";
+import { authClient } from "@/lib/auth-client";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
   CardDescription,
-} from "@/components/ui/card"
+} from "@/components/ui/card";
 
-export const Route = createFileRoute("/signup")({
+export const Route = createFileRoute("/auth/signup")({
   component: SignupPage,
-})
+});
 
 function SignupPage() {
-  const router = useRouter()
-  const [error, setError] = useState("")
-  const [loading, setLoading] = useState(false)
+  const router = useRouter();
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    setError("")
-    setLoading(true)
+    e.preventDefault();
+    setError("");
+    setLoading(true);
 
-    const form = e.target as HTMLFormElement
-    const data = new FormData(form)
-    const name = data.get("name") as string
-    const email = data.get("email") as string
-    const password = data.get("password") as string
-    const confirmPassword = data.get("confirmPassword") as string
+    const form = e.target as HTMLFormElement;
+    const data = new FormData(form);
+    const name = data.get("name") as string;
+    const email = data.get("email") as string;
+    const password = data.get("password") as string;
+    const confirmPassword = data.get("confirmPassword") as string;
 
     if (password !== confirmPassword) {
-      setError("Passwords do not match")
-      setLoading(false)
-      return
+      setError("Passwords do not match");
+      setLoading(false);
+      return;
     }
 
     const { error: authError } = await authClient.signUp.email({
       name,
       email,
       password,
-    })
+    });
 
-    setLoading(false)
+    setLoading(false);
 
     if (authError) {
-      setError(authError.message ?? "Failed to create account")
-      return
+      setError(authError.message ?? "Failed to create account");
+      return;
     }
 
-    router.navigate({ to: "/" })
-  }
+    router.navigate({ to: "/" });
+  };
 
   return (
     <div className="flex min-h-screen items-center justify-center p-4">
@@ -125,5 +125,5 @@ function SignupPage() {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

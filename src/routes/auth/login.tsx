@@ -19,7 +19,7 @@ function sanitizeRedirect(url: unknown): string {
   return url
 }
 
-export const Route = createFileRoute("/login")({
+export const Route = createFileRoute("/auth/login")({
   validateSearch: (search: Record<string, unknown>) => ({
     redirect: sanitizeRedirect(search.redirect),
   }),

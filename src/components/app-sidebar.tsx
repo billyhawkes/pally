@@ -57,7 +57,7 @@ export function AppSidebar({
   auth: NonNullable<AuthState["session"]>;
 }) {
   const router = useRouter();
-  const params = useParams({ from: "/_authenticated/$orgSlug" });
+  const params = useParams({ from: "/$orgSlug" });
   const currentOrgSlug = params.orgSlug;
 
   const orgsResult = useAtomValue(organizationsAtom);

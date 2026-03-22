@@ -13,7 +13,7 @@ import {
   CardDescription,
 } from "@/components/ui/card";
 
-export const Route = createFileRoute("/create-organization")({
+export const Route = createFileRoute("/auth/create-organization")({
   beforeLoad: async () => {
     const session = await getSession();
     if (!session) {

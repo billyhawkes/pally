@@ -55,3 +55,7 @@ Goal: Connect TanStack DB to the Effect API and display data in the UI.
 - [ ] Build list/board view components for tasks
 - [ ] Display live data from the API in the web app
 
+## Fixes
+- [x] Api docs url
+- [ ] Fix tasks api route
+- [ ] Migrate anchor tags to links
