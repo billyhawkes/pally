@@ -3,6 +3,7 @@
   "module": "index.ts",
   "devDependencies": {
     "@effect/language-service": "^0.81.0",
+    "@tanstack/react-router-devtools": "1.166.11",
     "@tanstack/start-plugin": "^1.111.2",
     "@types/better-sqlite3": "^7.6.13",
     "@types/bun": "latest",

@@ -3,6 +3,7 @@ import {
   Scripts,
   createRootRouteWithContext,
 } from "@tanstack/react-router";
+import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
 import { RegistryProvider } from "@effect/atom-react";
 
 import appCss from "@/styles.css?url";
@@ -27,7 +28,10 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <HeadContent />
       </head>
       <body className="min-h-screen bg-background font-sans antialiased">
-        <RegistryProvider>{children}</RegistryProvider>
+        <RegistryProvider>
+          {children}
+          {import.meta.env.DEV ? <TanStackRouterDevtools /> : null}
+        </RegistryProvider>
         <Scripts />
       </body>
     </html>
