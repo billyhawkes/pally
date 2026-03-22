@@ -19,6 +19,7 @@ const tasksGroupLive = HttpApiBuilder.group(PallyApi, "tasks", (handlers) =>
       Effect.gen(function* () {
         const taskService = yield* TaskService;
         return yield* taskService.list({
+          orgId: query.orgId,
           status: query.status,
           priority: query.priority,
           projectId: query.projectId,
@@ -58,10 +59,10 @@ const projectsGroupLive = HttpApiBuilder.group(
   "projects",
   (handlers) =>
     handlers
-      .handle("listProjects", () =>
+      .handle("listProjects", ({ query }) =>
         Effect.gen(function* () {
           const projectService = yield* ProjectService;
-          return yield* projectService.list();
+          return yield* projectService.list({ orgId: query.orgId });
         }),
       )
       .handle("getProject", ({ params }) =>
@@ -93,10 +94,10 @@ const projectsGroupLive = HttpApiBuilder.group(
 // Views group implementation
 const viewsGroupLive = HttpApiBuilder.group(PallyApi, "views", (handlers) =>
   handlers
-    .handle("listViews", () =>
+    .handle("listViews", ({ query }) =>
       Effect.gen(function* () {
         const viewService = yield* ViewService;
-        return yield* viewService.list();
+        return yield* viewService.list({ orgId: query.orgId });
       }),
     )
     .handle("getView", ({ params }) =>

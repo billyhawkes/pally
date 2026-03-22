@@ -1,6 +1,7 @@
 import { PallyClient } from "@/lib/pally-client";
 
 export const allProjectsAtom = PallyClient.query("projects", "listProjects", {
+  query: {},
   timeToLive: "5 minutes",
   reactivityKeys: ["projects"],
 });

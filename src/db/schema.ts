@@ -6,6 +6,7 @@ export const tasks = pgTable("tasks", {
   description: text("description"),
   status: varchar("status", { length: 50 }).notNull().default("todo"),
   priority: varchar("priority", { length: 50 }).notNull().default("medium"),
+  orgId: varchar("org_id", { length: 255 }),
   projectId: varchar("project_id", { length: 255 }),
   teamId: varchar("team_id", { length: 255 }),
   createdAt: timestamp("created_at").notNull().defaultNow(),
@@ -16,6 +17,7 @@ export const projects = pgTable("projects", {
   id: varchar("id", { length: 255 }).primaryKey(),
   name: varchar("name", { length: 255 }).notNull(),
   description: text("description"),
+  orgId: varchar("org_id", { length: 255 }),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 })
@@ -23,6 +25,7 @@ export const projects = pgTable("projects", {
 export const views = pgTable("views", {
   id: varchar("id", { length: 255 }).primaryKey(),
   name: varchar("name", { length: 255 }).notNull(),
+  orgId: varchar("org_id", { length: 255 }),
   filters: jsonb("filters").notNull(),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),

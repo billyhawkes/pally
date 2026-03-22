@@ -11,6 +11,7 @@ import {
   CreateTaskPayload,
   CreateViewPayload,
   Organization,
+  OrganizationId,
   Project,
   ProjectId,
   ProjectNotFoundError,
@@ -67,6 +68,7 @@ export class Authentication extends HttpApiMiddleware.Service<
 // Task endpoints
 const listTasks = HttpApiEndpoint.get("listTasks", "/tasks", {
   query: Schema.Struct({
+    orgId: Schema.optionalKey(OrganizationId),
     status: Schema.optionalKey(TaskStatus),
     priority: Schema.optionalKey(TaskPriority),
     projectId: Schema.optionalKey(ProjectId),
@@ -111,6 +113,9 @@ const tasksGroup = HttpApiGroup.make("tasks")
 
 // Project endpoints
 const listProjects = HttpApiEndpoint.get("listProjects", "/projects", {
+  query: Schema.Struct({
+    orgId: Schema.optionalKey(OrganizationId),
+  }),
   success: Schema.Array(Project),
 });
 
@@ -150,6 +155,9 @@ const projectsGroup = HttpApiGroup.make("projects")
 
 // View endpoints
 const listViews = HttpApiEndpoint.get("listViews", "/views", {
+  query: Schema.Struct({
+    orgId: Schema.optionalKey(OrganizationId),
+  }),
   success: Schema.Array(View),
 });
 
@@ -203,7 +211,7 @@ const organizationsGroup = HttpApiGroup.make("organizations")
 // Team endpoints
 const listTeams = HttpApiEndpoint.get("listTeams", "/teams", {
   query: Schema.Struct({
-    organizationId: Schema.String,
+    organizationId: Schema.optionalKey(OrganizationId),
   }),
   success: Schema.Array(Team),
 });

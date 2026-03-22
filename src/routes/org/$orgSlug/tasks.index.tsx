@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useAtomValue, useAtomSet } from "@effect/atom-react";
 import type { Task } from "@/lib/schemas";
+import { organizationsAtom } from "@/lib/atoms/organizations";
 import {
   allTasksAtom,
   createTaskAtom,
@@ -17,14 +18,24 @@ export const Route = createFileRoute("/org/$orgSlug/tasks/")({
 });
 
 function TasksPage() {
+  const { orgSlug } = Route.useParams();
   const tasks = useAtomValue(allTasksAtom);
+  const organizations = useAtomValue(organizationsAtom);
+  const orgId =
+    organizations._tag === "Success"
+      ? (organizations.value.find((org) => org.slug === orgSlug)?.id ?? null)
+      : null;
+  const filteredTasks =
+    tasks._tag === "Success"
+      ? tasks.value.filter((task) => task.orgId === orgId)
+      : null;
   console.log(tasks);
 
   return (
     <div className="p-6 space-y-6">
       <h1 className="text-2xl font-bold">Tasks</h1>
 
-      <CreateTaskForm />
+      <CreateTaskForm orgId={orgId} />
 
       <div className="space-y-2">
         {tasks._tag === "Initial" && (
@@ -34,17 +45,17 @@ function TasksPage() {
           <p className="text-destructive">Failed to load tasks</p>
         )}
         {tasks._tag === "Success" &&
-          (tasks.value.length === 0 ? (
+          (filteredTasks?.length === 0 ? (
             <p className="text-muted-foreground">No tasks yet.</p>
           ) : (
-            tasks.value.map((task) => <TaskCard key={task.id} task={task} />)
+            filteredTasks?.map((task) => <TaskCard key={task.id} task={task} />)
           ))}
       </div>
     </div>
   );
 }
 
-function CreateTaskForm() {
+function CreateTaskForm({ orgId }: { orgId: Task["orgId"] }) {
   const create = useAtomSet(createTaskAtom);
 
   return (
@@ -62,6 +73,7 @@ function CreateTaskForm() {
             description: null,
             status: "todo",
             priority: "medium",
+            orgId,
             projectId: null,
             teamId: null,
           },

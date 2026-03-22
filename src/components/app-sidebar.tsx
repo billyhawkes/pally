@@ -35,16 +35,12 @@ import { Input } from "@/components/ui/input";
 import { authClient } from "@/lib/auth-client";
 import { PallyClient } from "@/lib/pally-client";
 import type { AuthState } from "@/lib/auth-context";
+import type { OrganizationId } from "@/lib/schemas";
+import { organizationsAtom } from "@/lib/atoms/organizations";
 
 const navItems = [{ title: "Tasks", icon: ClipboardList }] as const;
 
-const organizationsAtom = PallyClient.query(
-  "organizations",
-  "listOrganizations",
-  { timeToLive: "5 minutes", reactivityKeys: ["organizations"] },
-);
-
-const teamsAtom = (orgId: string) =>
+const teamsAtom = (orgId?: OrganizationId) =>
   PallyClient.query("teams", "listTeams", {
     query: { organizationId: orgId },
     timeToLive: "5 minutes",
@@ -69,8 +65,8 @@ export function AppSidebar({
     ? (organizations.find((o) => o.slug === currentOrgSlug) ?? null)
     : null;
 
-  const teamsResult = useAtomValue(teamsAtom(activeOrg?.id ?? ""));
-  const teams = teamsResult?._tag === "Success" ? teamsResult.value : [];
+  const teamsResult = useAtomValue(teamsAtom(activeOrg?.id));
+  const teams = teamsResult._tag === "Success" ? teamsResult.value : [];
 
   const [showCreateTeam, setShowCreateTeam] = useState(false);
   const [newTeamName, setNewTeamName] = useState("");
@@ -154,7 +150,7 @@ export function AppSidebar({
                     )}
                   </DropdownMenuItem>
                 ))}
-                {organizations.length > 0 && <DropdownMenuSeparator />}
+                {organizations?.length > 0 && <DropdownMenuSeparator />}
                 <DropdownMenuItem asChild>
                   <Link to="/auth/create-organization">
                     <Plus className="mr-2 size-4" />

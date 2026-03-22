@@ -1,7 +1,8 @@
 import { Clock, Effect, Layer, Schema, ServiceMap } from "effect"
-import { eq } from "drizzle-orm"
+import { eq, and } from "drizzle-orm"
 import {
   CreateViewPayload,
+  OrganizationId,
   UpdateViewPayload,
   View,
   ViewId,
@@ -16,7 +17,7 @@ const decodeView = Schema.decodeUnknownSync(View)
 export class ViewService extends ServiceMap.Service<
   ViewService,
   {
-    readonly list: () => Effect.Effect<readonly View[]>
+    readonly list: (filters?: { orgId?: OrganizationId | undefined }) => Effect.Effect<readonly View[]>
     readonly findById: (id: ViewId) => Effect.Effect<View, ViewNotFoundError>
     readonly create: (payload: CreateViewPayload) => Effect.Effect<View>
     readonly update: (id: ViewId, payload: UpdateViewPayload) => Effect.Effect<View, ViewNotFoundError>
@@ -28,8 +29,20 @@ export class ViewService extends ServiceMap.Service<
     Effect.gen(function* () {
       const db = yield* DB
 
-      const list = Effect.fn("ViewService.list")(function* () {
-        const rows = yield* dbQuery(db.select().from(views))
+      const list = Effect.fn("ViewService.list")(function* (filters?: {
+        orgId?: OrganizationId | undefined
+      }) {
+        const conditions = []
+        if (filters?.orgId) {
+          conditions.push(eq(views.orgId, filters.orgId as string))
+        }
+
+        const query =
+          conditions.length > 0
+            ? db.select().from(views).where(and(...conditions))
+            : db.select().from(views)
+
+        const rows = yield* dbQuery(query)
         return rows.map((row) => decodeView(row))
       })
 
@@ -50,6 +63,7 @@ export class ViewService extends ServiceMap.Service<
           db.insert(views).values({
             id,
             name: payload.name,
+            orgId: payload.orgId,
             filters: {
               status: payload.filters.status,
               priority: payload.filters.priority,
@@ -60,6 +74,7 @@ export class ViewService extends ServiceMap.Service<
         return decodeView({
           id,
           name: payload.name,
+          orgId: payload.orgId,
           filters: payload.filters,
           createdAt: new Date(now),
           updatedAt: new Date(now),
@@ -73,6 +88,7 @@ export class ViewService extends ServiceMap.Service<
 
           const setValues: Record<string, unknown> = { updatedAt: new Date(now) }
           if ("name" in payload) setValues.name = payload.name
+          if ("orgId" in payload) setValues.orgId = payload.orgId ?? null
           if ("filters" in payload) {
             const f = payload.filters!
             setValues.filters = {
@@ -89,6 +105,7 @@ export class ViewService extends ServiceMap.Service<
           return decodeView({
             id: existing.id,
             name: "name" in payload ? payload.name : existing.name,
+            orgId: "orgId" in payload ? (payload.orgId ?? null) : existing.orgId,
             filters: "filters" in payload
               ? {
                   status: payload.filters!.status ?? null,

@@ -1,7 +1,8 @@
 import { Clock, Effect, Layer, Schema, ServiceMap } from "effect"
-import { eq } from "drizzle-orm"
+import { eq, and } from "drizzle-orm"
 import {
   CreateProjectPayload,
+  OrganizationId,
   Project,
   ProjectId,
   ProjectNotFoundError,
@@ -16,7 +17,7 @@ const decodeProject = Schema.decodeUnknownSync(Project)
 export class ProjectService extends ServiceMap.Service<
   ProjectService,
   {
-    readonly list: () => Effect.Effect<readonly Project[]>
+    readonly list: (filters?: { orgId?: OrganizationId | undefined }) => Effect.Effect<readonly Project[]>
     readonly findById: (id: ProjectId) => Effect.Effect<Project, ProjectNotFoundError>
     readonly create: (payload: CreateProjectPayload) => Effect.Effect<Project>
     readonly update: (id: ProjectId, payload: UpdateProjectPayload) => Effect.Effect<Project, ProjectNotFoundError>
@@ -28,8 +29,20 @@ export class ProjectService extends ServiceMap.Service<
     Effect.gen(function* () {
       const db = yield* DB
 
-      const list = Effect.fn("ProjectService.list")(function* () {
-        const rows = yield* dbQuery(db.select().from(projects))
+      const list = Effect.fn("ProjectService.list")(function* (filters?: {
+        orgId?: OrganizationId | undefined
+      }) {
+        const conditions = []
+        if (filters?.orgId) {
+          conditions.push(eq(projects.orgId, filters.orgId as string))
+        }
+
+        const query =
+          conditions.length > 0
+            ? db.select().from(projects).where(and(...conditions))
+            : db.select().from(projects)
+
+        const rows = yield* dbQuery(query)
         return rows.map((row) => decodeProject(row))
       })
 
@@ -51,12 +64,14 @@ export class ProjectService extends ServiceMap.Service<
             id,
             name: payload.name,
             description: payload.description,
+            orgId: payload.orgId,
           })
         )
         return decodeProject({
           id,
           name: payload.name,
           description: payload.description,
+          orgId: payload.orgId,
           createdAt: new Date(now),
           updatedAt: new Date(now),
         })
@@ -70,6 +85,7 @@ export class ProjectService extends ServiceMap.Service<
           const setValues: Record<string, unknown> = { updatedAt: new Date(now) }
           if ("name" in payload) setValues.name = payload.name
           if ("description" in payload) setValues.description = payload.description ?? null
+          if ("orgId" in payload) setValues.orgId = payload.orgId ?? null
 
           yield* dbQuery(
             db.update(projects).set(setValues).where(eq(projects.id, id as string))
@@ -79,6 +95,7 @@ export class ProjectService extends ServiceMap.Service<
             id: existing.id,
             name: "name" in payload ? payload.name : existing.name,
             description: "description" in payload ? (payload.description ?? null) : existing.description,
+            orgId: "orgId" in payload ? (payload.orgId ?? null) : existing.orgId,
             createdAt: existing.createdAt,
             updatedAt: new Date(now),
           })

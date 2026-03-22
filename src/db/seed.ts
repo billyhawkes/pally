@@ -23,11 +23,13 @@ export const seed = Effect.gen(function* () {
         id: "project-1",
         name: "Pally",
         description: "A web-first project and task application with Github sync",
+        orgId: null,
       },
       {
         id: "project-2",
         name: "Website",
         description: "Company website redesign",
+        orgId: null,
       },
     ])
   )
@@ -40,6 +42,7 @@ export const seed = Effect.gen(function* () {
         description: "Initialize the project with Effect and TanStack Start",
         status: "done",
         priority: "high",
+        orgId: null,
         projectId: null,
       },
       {
@@ -48,6 +51,7 @@ export const seed = Effect.gen(function* () {
         description: "Set up Better Auth with organizations and teams",
         status: "in_progress",
         priority: "urgent",
+        orgId: null,
         projectId: "project-1",
       },
       {
@@ -56,6 +60,7 @@ export const seed = Effect.gen(function* () {
         description: null,
         status: "todo",
         priority: "medium",
+        orgId: null,
         projectId: "project-1",
       },
     ])
@@ -66,16 +71,19 @@ export const seed = Effect.gen(function* () {
       {
         id: "view-1",
         name: "All Tasks",
+        orgId: null,
         filters: { status: null, priority: null, projectId: null },
       },
       {
         id: "view-2",
         name: "High Priority",
+        orgId: null,
         filters: { status: null, priority: ["urgent", "high"], projectId: null },
       },
       {
         id: "view-3",
         name: "In Progress",
+        orgId: null,
         filters: { status: ["in_progress"], priority: null, projectId: null },
       },
     ])

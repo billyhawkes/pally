@@ -18,6 +18,9 @@ export type ProjectId = typeof ProjectId.Type;
 export const ViewId = Schema.String.pipe(Schema.brand("ViewId"));
 export type ViewId = typeof ViewId.Type;
 
+export const OrganizationId = Schema.String.pipe(Schema.brand("OrganizationId"));
+export type OrganizationId = typeof OrganizationId.Type;
+
 export const TeamId = Schema.String.pipe(Schema.brand("TeamId"));
 export type TeamId = typeof TeamId.Type;
 
@@ -40,6 +43,7 @@ export const Task = Schema.Struct({
   description: Schema.NullOr(Schema.String),
   status: TaskStatus,
   priority: TaskPriority,
+  orgId: Schema.NullOr(OrganizationId),
   projectId: Schema.NullOr(ProjectId),
   teamId: Schema.NullOr(TeamId),
   createdAt: DateFromHttp,
@@ -52,6 +56,7 @@ export const CreateTaskPayload = Schema.Struct({
   description: Schema.NullOr(Schema.String),
   status: TaskStatus,
   priority: TaskPriority,
+  orgId: Schema.NullOr(OrganizationId),
   projectId: Schema.NullOr(ProjectId),
   teamId: Schema.NullOr(TeamId),
 });
@@ -62,6 +67,7 @@ export const UpdateTaskPayload = Schema.Struct({
   description: Schema.optionalKey(Schema.NullOr(Schema.String)),
   status: Schema.optionalKey(TaskStatus),
   priority: Schema.optionalKey(TaskPriority),
+  orgId: Schema.optionalKey(Schema.NullOr(OrganizationId)),
   projectId: Schema.optionalKey(Schema.NullOr(ProjectId)),
   teamId: Schema.optionalKey(Schema.NullOr(TeamId)),
 });
@@ -71,6 +77,7 @@ export const Project = Schema.Struct({
   id: ProjectId,
   name: Schema.NonEmptyString,
   description: Schema.NullOr(Schema.String),
+  orgId: Schema.NullOr(OrganizationId),
   createdAt: DateFromHttp,
   updatedAt: DateFromHttp,
 });
@@ -79,18 +86,21 @@ export type Project = typeof Project.Type;
 export const CreateProjectPayload = Schema.Struct({
   name: Schema.NonEmptyString,
   description: Schema.NullOr(Schema.String),
+  orgId: Schema.NullOr(OrganizationId),
 });
 export type CreateProjectPayload = typeof CreateProjectPayload.Type;
 
 export const UpdateProjectPayload = Schema.Struct({
   name: Schema.optionalKey(Schema.NonEmptyString),
   description: Schema.optionalKey(Schema.NullOr(Schema.String)),
+  orgId: Schema.optionalKey(Schema.NullOr(OrganizationId)),
 });
 export type UpdateProjectPayload = typeof UpdateProjectPayload.Type;
 
 export const View = Schema.Struct({
   id: ViewId,
   name: Schema.NonEmptyString,
+  orgId: Schema.NullOr(OrganizationId),
   filters: Schema.Struct({
     status: Schema.NullOr(Schema.Array(TaskStatus)),
     priority: Schema.NullOr(Schema.Array(TaskPriority)),
@@ -103,6 +113,7 @@ export type View = typeof View.Type;
 
 export const CreateViewPayload = Schema.Struct({
   name: Schema.NonEmptyString,
+  orgId: Schema.NullOr(OrganizationId),
   filters: Schema.Struct({
     status: Schema.NullOr(Schema.Array(TaskStatus)),
     priority: Schema.NullOr(Schema.Array(TaskPriority)),
@@ -113,6 +124,7 @@ export type CreateViewPayload = typeof CreateViewPayload.Type;
 
 export const UpdateViewPayload = Schema.Struct({
   name: Schema.optionalKey(Schema.NonEmptyString),
+  orgId: Schema.optionalKey(Schema.NullOr(OrganizationId)),
   filters: Schema.optionalKey(
     Schema.Struct({
       status: Schema.NullOr(Schema.Array(TaskStatus)),
@@ -152,7 +164,7 @@ export type SessionData = typeof SessionData.Type;
 
 // Organization and Team types
 export const Organization = Schema.Struct({
-  id: Schema.String,
+  id: OrganizationId,
   name: Schema.String,
   slug: Schema.String,
   logo: Schema.NullOr(Schema.String),
@@ -163,7 +175,7 @@ export type Organization = typeof Organization.Type;
 export const Team = Schema.Struct({
   id: Schema.String,
   name: Schema.String,
-  organizationId: Schema.String,
+  organizationId: OrganizationId,
   createdAt: DateFromHttp,
 });
 export type Team = typeof Team.Type;

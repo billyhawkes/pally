@@ -2,6 +2,7 @@ import { Clock, Effect, Layer, Schema, ServiceMap } from "effect";
 import { and, eq } from "drizzle-orm";
 import {
   CreateTaskPayload,
+  OrganizationId,
   ProjectId,
   Task,
   TaskId,
@@ -20,6 +21,7 @@ export class TaskService extends ServiceMap.Service<
   TaskService,
   {
     readonly list: (filters?: {
+      orgId?: OrganizationId | undefined;
       status?: TaskStatus | undefined;
       priority?: TaskPriority | undefined;
       projectId?: ProjectId | undefined;
@@ -40,12 +42,16 @@ export class TaskService extends ServiceMap.Service<
       const db = yield* DB;
 
       const list = Effect.fn("TaskService.list")(function* (filters?: {
+        orgId?: OrganizationId | undefined;
         status?: TaskStatus | undefined;
         priority?: TaskPriority | undefined;
         projectId?: ProjectId | undefined;
         teamId?: TeamId | undefined;
       }) {
         const conditions = [];
+        if (filters?.orgId) {
+          conditions.push(eq(tasks.orgId, filters.orgId as string));
+        }
         if (filters?.status) {
           conditions.push(eq(tasks.status, filters.status));
         }
@@ -99,6 +105,7 @@ export class TaskService extends ServiceMap.Service<
             description: payload.description,
             status: payload.status,
             priority: payload.priority,
+            orgId: payload.orgId,
             projectId: payload.projectId,
             teamId: payload.teamId,
           }),
@@ -109,6 +116,7 @@ export class TaskService extends ServiceMap.Service<
           description: payload.description,
           status: payload.status,
           priority: payload.priority,
+          orgId: payload.orgId,
           projectId: payload.projectId,
           teamId: payload.teamId,
           createdAt: new Date(now),
@@ -129,6 +137,7 @@ export class TaskService extends ServiceMap.Service<
           setValues.description = payload.description ?? null;
         if ("status" in payload) setValues.status = payload.status;
         if ("priority" in payload) setValues.priority = payload.priority;
+        if ("orgId" in payload) setValues.orgId = payload.orgId ?? null;
         if ("projectId" in payload)
           setValues.projectId = payload.projectId ?? null;
         if ("teamId" in payload)
@@ -151,6 +160,7 @@ export class TaskService extends ServiceMap.Service<
           status: "status" in payload ? payload.status : existing.status,
           priority:
             "priority" in payload ? payload.priority : existing.priority,
+          orgId: "orgId" in payload ? (payload.orgId ?? null) : existing.orgId,
           projectId:
             "projectId" in payload
               ? (payload.projectId ?? null)

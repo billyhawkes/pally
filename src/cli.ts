@@ -67,6 +67,7 @@ const taskCreateCommand = Command.make("create", { title: taskTitle }, ({ title 
       description: null,
       status: "todo",
       priority: "medium",
+      orgId: null,
       projectId: null,
       teamId: null,
     })
@@ -132,10 +133,11 @@ const projectNameArg = Argument.string("name").pipe(
 const projectCreateCommand = Command.make("create", { name: projectNameArg }, ({ name }) =>
   Effect.gen(function* () {
     const projectService = yield* ProjectService
-    const project = yield* projectService.create({
-      name,
-      description: null,
-    })
+      const project = yield* projectService.create({
+        name,
+        description: null,
+        orgId: null,
+      })
     yield* Console.log(`Created project #${project.id}: ${project.name}`)
   })
 ).pipe(Command.withDescription("Create a new project"))
@@ -193,11 +195,12 @@ const viewNameArg = Argument.string("name").pipe(
 const viewCreateCommand = Command.make("create", { name: viewNameArg }, ({ name }) =>
   Effect.gen(function* () {
     const viewService = yield* ViewService
-    const view = yield* viewService.create({
-      name,
-      filters: {
-        status: null,
-        priority: null,
+      const view = yield* viewService.create({
+        name,
+        orgId: null,
+        filters: {
+          status: null,
+          priority: null,
         projectId: null,
       },
     })

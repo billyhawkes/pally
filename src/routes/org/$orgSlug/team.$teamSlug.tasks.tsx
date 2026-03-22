@@ -1,8 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useAtomValue, useAtomSet } from "@effect/atom-react";
 import type { Task, TeamId } from "@/lib/schemas";
-import { PallyClient } from "@/lib/pally-client";
+import { organizationsAtom } from "@/lib/atoms/organizations";
 import {
+  allTasksAtom,
   createTaskAtom,
   deleteTaskAtom,
   updateTaskAtom,
@@ -17,22 +18,26 @@ export const Route = createFileRoute("/org/$orgSlug/team/$teamSlug/tasks")({
 });
 
 function TeamTasksPage() {
-  const { teamSlug } = Route.useParams();
+  const { orgSlug, teamSlug } = Route.useParams();
+  const organizations = useAtomValue(organizationsAtom);
+  const orgId =
+    organizations._tag === "Success"
+      ? (organizations.value.find((org) => org.slug === orgSlug)?.id ?? null)
+      : null;
   const teamId = teamSlug as unknown as TeamId;
-
-  const tasksAtom = PallyClient.query("tasks", "listTasks", {
-    query: { teamId },
-    timeToLive: "5 minutes",
-    reactivityKeys: ["tasks"],
-  });
-
-  const tasks = useAtomValue(tasksAtom);
+  const tasks = useAtomValue(allTasksAtom);
+  const filteredTasks =
+    tasks._tag === "Success"
+      ? tasks.value.filter(
+          (task) => task.orgId === orgId && task.teamId === teamId,
+        )
+      : null;
 
   return (
     <div className="p-6 space-y-6">
       <h1 className="text-2xl font-bold">Team Tasks</h1>
 
-      <CreateTaskForm teamId={teamId} />
+      <CreateTaskForm orgId={orgId} teamId={teamId} />
 
       <div className="space-y-2">
         {tasks._tag === "Initial" && (
@@ -42,17 +47,23 @@ function TeamTasksPage() {
           <p className="text-destructive">Failed to load tasks</p>
         )}
         {tasks._tag === "Success" &&
-          (tasks.value.length === 0 ? (
+          (filteredTasks?.length === 0 ? (
             <p className="text-muted-foreground">No tasks yet.</p>
           ) : (
-            tasks.value.map((task) => <TaskCard key={task.id} task={task} />)
+            filteredTasks?.map((task) => <TaskCard key={task.id} task={task} />)
           ))}
       </div>
     </div>
   );
 }
 
-function CreateTaskForm({ teamId }: { teamId: TeamId }) {
+function CreateTaskForm({
+  orgId,
+  teamId,
+}: {
+  orgId: Task["orgId"];
+  teamId: TeamId;
+}) {
   const create = useAtomSet(createTaskAtom);
 
   return (
@@ -70,6 +81,7 @@ function CreateTaskForm({ teamId }: { teamId: TeamId }) {
             description: null,
             status: "todo",
             priority: "medium",
+            orgId,
             projectId: null,
             teamId,
           },
