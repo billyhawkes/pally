@@ -1,5 +1,11 @@
-import { Schema, ServiceMap } from "effect"
-import { HttpApi, HttpApiEndpoint, HttpApiGroup, HttpApiMiddleware, HttpApiError } from "effect/unstable/httpapi"
+import { Schema, ServiceMap } from "effect";
+import {
+  HttpApi,
+  HttpApiEndpoint,
+  HttpApiGroup,
+  HttpApiMiddleware,
+  HttpApiError,
+} from "effect/unstable/httpapi";
 import {
   CreateProjectPayload,
   CreateTaskPayload,
@@ -21,27 +27,27 @@ import {
   View,
   ViewId,
   ViewNotFoundError,
-} from "./schemas"
+} from "./schemas";
 
 type AuthSession = {
   user: {
-    id: string
-    name: string
-    email: string
-    emailVerified: boolean
-    createdAt: Date
-    updatedAt: Date
-    image?: string | null
-  }
+    id: string;
+    name: string;
+    email: string;
+    emailVerified: boolean;
+    createdAt: Date;
+    updatedAt: Date;
+    image?: string | null;
+  };
   session: {
-    id: string
-    userId: string
-    expiresAt: Date
-    createdAt: Date
-    updatedAt: Date
-    token: string
-  }
-}
+    id: string;
+    userId: string;
+    expiresAt: Date;
+    createdAt: Date;
+    updatedAt: Date;
+    token: string;
+  };
+};
 
 export class CurrentSession extends ServiceMap.Service<
   CurrentSession,
@@ -51,11 +57,11 @@ export class CurrentSession extends ServiceMap.Service<
 export class Authentication extends HttpApiMiddleware.Service<
   Authentication,
   {
-    provides: CurrentSession
-    error: HttpApiError.Unauthorized
+    provides: CurrentSession;
+    error: HttpApiError.Unauthorized;
   }
 >()("@pally/Authentication", {
-  error: HttpApiError.Unauthorized
+  error: HttpApiError.Unauthorized,
 }) {}
 
 // Task endpoints
@@ -67,7 +73,7 @@ const listTasks = HttpApiEndpoint.get("listTasks", "/tasks", {
     teamId: Schema.optionalKey(TeamId),
   }),
   success: Schema.Array(Task),
-})
+});
 
 const getTask = HttpApiEndpoint.get("getTask", "/tasks/:id", {
   params: Schema.Struct({
@@ -75,12 +81,12 @@ const getTask = HttpApiEndpoint.get("getTask", "/tasks/:id", {
   }),
   success: Task,
   error: TaskNotFoundError,
-})
+});
 
 const createTask = HttpApiEndpoint.post("createTask", "/tasks", {
   payload: CreateTaskPayload,
   success: Task,
-})
+});
 
 const updateTask = HttpApiEndpoint.patch("updateTask", "/tasks/:id", {
   params: Schema.Struct({
@@ -89,7 +95,7 @@ const updateTask = HttpApiEndpoint.patch("updateTask", "/tasks/:id", {
   payload: UpdateTaskPayload,
   success: Task,
   error: TaskNotFoundError,
-})
+});
 
 const deleteTask = HttpApiEndpoint.delete("deleteTask", "/tasks/:id", {
   params: Schema.Struct({
@@ -97,16 +103,16 @@ const deleteTask = HttpApiEndpoint.delete("deleteTask", "/tasks/:id", {
   }),
   success: Task,
   error: TaskNotFoundError,
-})
+});
 
 const tasksGroup = HttpApiGroup.make("tasks")
   .add(listTasks, getTask, createTask, updateTask, deleteTask)
-  .middleware(Authentication)
+  .middleware(Authentication);
 
 // Project endpoints
 const listProjects = HttpApiEndpoint.get("listProjects", "/projects", {
   success: Schema.Array(Project),
-})
+});
 
 const getProject = HttpApiEndpoint.get("getProject", "/projects/:id", {
   params: Schema.Struct({
@@ -114,12 +120,12 @@ const getProject = HttpApiEndpoint.get("getProject", "/projects/:id", {
   }),
   success: Project,
   error: ProjectNotFoundError,
-})
+});
 
 const createProject = HttpApiEndpoint.post("createProject", "/projects", {
   payload: CreateProjectPayload,
   success: Project,
-})
+});
 
 const updateProject = HttpApiEndpoint.patch("updateProject", "/projects/:id", {
   params: Schema.Struct({
@@ -128,7 +134,7 @@ const updateProject = HttpApiEndpoint.patch("updateProject", "/projects/:id", {
   payload: UpdateProjectPayload,
   success: Project,
   error: ProjectNotFoundError,
-})
+});
 
 const deleteProject = HttpApiEndpoint.delete("deleteProject", "/projects/:id", {
   params: Schema.Struct({
@@ -136,16 +142,16 @@ const deleteProject = HttpApiEndpoint.delete("deleteProject", "/projects/:id", {
   }),
   success: Project,
   error: ProjectNotFoundError,
-})
+});
 
 const projectsGroup = HttpApiGroup.make("projects")
   .add(listProjects, getProject, createProject, updateProject, deleteProject)
-  .middleware(Authentication)
+  .middleware(Authentication);
 
 // View endpoints
 const listViews = HttpApiEndpoint.get("listViews", "/views", {
   success: Schema.Array(View),
-})
+});
 
 const getView = HttpApiEndpoint.get("getView", "/views/:id", {
   params: Schema.Struct({
@@ -153,12 +159,12 @@ const getView = HttpApiEndpoint.get("getView", "/views/:id", {
   }),
   success: View,
   error: ViewNotFoundError,
-})
+});
 
 const createView = HttpApiEndpoint.post("createView", "/views", {
   payload: CreateViewPayload,
   success: View,
-})
+});
 
 const updateView = HttpApiEndpoint.patch("updateView", "/views/:id", {
   params: Schema.Struct({
@@ -167,7 +173,7 @@ const updateView = HttpApiEndpoint.patch("updateView", "/views/:id", {
   payload: UpdateViewPayload,
   success: View,
   error: ViewNotFoundError,
-})
+});
 
 const deleteView = HttpApiEndpoint.delete("deleteView", "/views/:id", {
   params: Schema.Struct({
@@ -175,20 +181,24 @@ const deleteView = HttpApiEndpoint.delete("deleteView", "/views/:id", {
   }),
   success: View,
   error: ViewNotFoundError,
-})
+});
 
 const viewsGroup = HttpApiGroup.make("views")
   .add(listViews, getView, createView, updateView, deleteView)
-  .middleware(Authentication)
+  .middleware(Authentication);
 
 // Organization endpoints
-const listOrganizations = HttpApiEndpoint.get("listOrganizations", "/organizations", {
-  success: Schema.Array(Organization),
-})
+const listOrganizations = HttpApiEndpoint.get(
+  "listOrganizations",
+  "/organizations",
+  {
+    success: Schema.Array(Organization),
+  },
+);
 
 const organizationsGroup = HttpApiGroup.make("organizations")
   .add(listOrganizations)
-  .middleware(Authentication)
+  .middleware(Authentication);
 
 // Team endpoints
 const listTeams = HttpApiEndpoint.get("listTeams", "/teams", {
@@ -196,11 +206,11 @@ const listTeams = HttpApiEndpoint.get("listTeams", "/teams", {
     organizationId: Schema.String,
   }),
   success: Schema.Array(Team),
-})
+});
 
 const teamsGroup = HttpApiGroup.make("teams")
   .add(listTeams)
-  .middleware(Authentication)
+  .middleware(Authentication);
 
 // Main API
 export const PallyApi = HttpApi.make("PallyApi")
@@ -209,3 +219,4 @@ export const PallyApi = HttpApi.make("PallyApi")
   .add(viewsGroup)
   .add(organizationsGroup)
   .add(teamsGroup)
+  .prefix("/api");
