@@ -76,4 +76,5 @@ Goal: Connect Github with the Effect API with two-way syncing.
 - [x] Api docs url
 - [x] Fix tasks api route
 - [x] Migrate anchor tags to links
-- [ ] Remove unused packages
+- [x] Remove unused packages
+- [ ] Fix creating organization doesn't set it to the organization properly
