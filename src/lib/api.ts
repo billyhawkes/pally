@@ -1,6 +1,5 @@
-import { Schema } from "effect"
-import { HttpApi, HttpApiEndpoint, HttpApiGroup } from "effect/unstable/httpapi"
-import { Authentication } from "./auth-middleware"
+import { Schema, ServiceMap } from "effect"
+import { HttpApi, HttpApiEndpoint, HttpApiGroup, HttpApiMiddleware, HttpApiError } from "effect/unstable/httpapi"
 import {
   CreateProjectPayload,
   CreateTaskPayload,
@@ -23,6 +22,41 @@ import {
   ViewId,
   ViewNotFoundError,
 } from "./schemas"
+
+type AuthSession = {
+  user: {
+    id: string
+    name: string
+    email: string
+    emailVerified: boolean
+    createdAt: Date
+    updatedAt: Date
+    image?: string | null
+  }
+  session: {
+    id: string
+    userId: string
+    expiresAt: Date
+    createdAt: Date
+    updatedAt: Date
+    token: string
+  }
+}
+
+export class CurrentSession extends ServiceMap.Service<
+  CurrentSession,
+  AuthSession
+>()("@pally/CurrentSession") {}
+
+export class Authentication extends HttpApiMiddleware.Service<
+  Authentication,
+  {
+    provides: CurrentSession
+    error: HttpApiError.Unauthorized
+  }
+>()("@pally/Authentication", {
+  error: HttpApiError.Unauthorized
+}) {}
 
 // Task endpoints
 const listTasks = HttpApiEndpoint.get("listTasks", "/tasks", {

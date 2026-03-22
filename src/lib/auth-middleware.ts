@@ -1,42 +1,10 @@
-import { Effect, Layer, ServiceMap } from "effect"
-import { HttpApiMiddleware, HttpApiError } from "effect/unstable/httpapi"
+import { Effect, Layer } from "effect"
+import { HttpApiError } from "effect/unstable/httpapi"
 import { HttpServerRequest } from "effect/unstable/http"
 import { AuthService } from "./services/AuthService"
+import { CurrentSession, Authentication } from "./api"
 
-type AuthSession = {
-  user: {
-    id: string
-    name: string
-    email: string
-    emailVerified: boolean
-    createdAt: Date
-    updatedAt: Date
-    image?: string | null
-  }
-  session: {
-    id: string
-    userId: string
-    expiresAt: Date
-    createdAt: Date
-    updatedAt: Date
-    token: string
-  }
-}
-
-export class CurrentSession extends ServiceMap.Service<
-  CurrentSession,
-  AuthSession
->()("@pally/CurrentSession") {}
-
-export class Authentication extends HttpApiMiddleware.Service<
-  Authentication,
-  {
-    provides: CurrentSession
-    error: HttpApiError.Unauthorized
-  }
->()("@pally/Authentication", {
-  error: HttpApiError.Unauthorized
-}) {}
+export { CurrentSession, Authentication }
 
 export const AuthenticationLive = Layer.effect(
   Authentication,
