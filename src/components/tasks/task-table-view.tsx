@@ -11,7 +11,6 @@ import {
 import { ArrowUpDown } from "lucide-react"
 import type { Task } from "@/lib/schemas"
 import { deleteTaskAtom, updateTaskAtom } from "@/lib/atoms/tasks"
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -26,6 +25,9 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import {
+  CreateTaskDialog,
+} from "@/components/tasks/create-task-dialog"
+import {
   TaskActionsMenuContent,
   TaskActionsMenuTriggerButton,
 } from "@/components/tasks/task-actions-menu"
@@ -35,10 +37,11 @@ import {
 } from "@/components/tasks/task-context-menu"
 import {
   formatDate,
-  priorityColors,
-  statusColors,
-  statusLabels,
 } from "@/components/tasks/task-view-utils"
+import {
+  TaskPriorityBadgeSelect,
+  TaskStatusBadgeSelect,
+} from "@/components/tasks/task-property-badges"
 
 type TaskTableViewProps = {
   tasks: ReadonlyArray<Task>
@@ -56,6 +59,7 @@ export function TaskTableView({
     { id: "updatedAt", desc: true },
   ])
   const [contextMenu, setContextMenu] = useState<TaskContextMenuState | null>(null)
+  const [editingTask, setEditingTask] = useState<Task | null>(null)
 
   const moveTask = (task: Task, status: Task["status"]) => {
     if (task.status === status) {
@@ -118,18 +122,20 @@ export function TaskTableView({
         accessorKey: "status",
         header: "Status",
         cell: ({ row }) => (
-          <Badge className={statusColors[row.original.status]}>
-            {statusLabels[row.original.status]}
-          </Badge>
+          <TaskStatusBadgeSelect
+            status={row.original.status}
+            onStatusChange={(status) => moveTask(row.original, status)}
+          />
         ),
       },
       {
         accessorKey: "priority",
         header: "Priority",
         cell: ({ row }) => (
-          <Badge className={priorityColors[row.original.priority]}>
-            {row.original.priority}
-          </Badge>
+          <TaskPriorityBadgeSelect
+            priority={row.original.priority}
+            onPriorityChange={(priority) => changePriority(row.original, priority)}
+          />
         ),
       },
       {
@@ -172,6 +178,7 @@ export function TaskTableView({
                 moveTask={moveTask}
                 changePriority={changePriority}
                 removeTask={removeTask}
+                onEditTask={setEditingTask}
               />
             </DropdownMenu>
           </div>
@@ -217,7 +224,10 @@ export function TaskTableView({
           {table.getRowModel().rows.map((row) => (
             <TableRow
               key={row.id}
-              className="cursor-default"
+              className="cursor-pointer"
+              onClick={() => {
+                setEditingTask(row.original)
+              }}
               onContextMenu={(event) => {
                 event.preventDefault()
                 setContextMenu({
@@ -228,7 +238,14 @@ export function TaskTableView({
               }}
             >
               {row.getVisibleCells().map((cell) => (
-                <TableCell key={cell.id}>
+                <TableCell
+                  key={cell.id}
+                  onClick={(event) => {
+                    if (cell.column.id === "actions") {
+                      event.stopPropagation()
+                    }
+                  }}
+                >
                   {flexRender(cell.column.columnDef.cell, cell.getContext())}
                 </TableCell>
               ))}
@@ -243,7 +260,20 @@ export function TaskTableView({
         moveTask={moveTask}
         changePriority={changePriority}
         removeTask={removeTask}
+        onEditTask={setEditingTask}
       />
+
+      {editingTask ? (
+        <CreateTaskDialog
+          task={editingTask}
+          open
+          onOpenChange={(open) => {
+            if (!open) {
+              setEditingTask(null)
+            }
+          }}
+        />
+      ) : null}
     </div>
   )
 }

@@ -5,3 +5,4 @@
 - [x] Migrate anchor tags to links
 - [x] Remove unused packages
 - [x] Fix creating organization doesn't set it to the organization properly
+- [ ] No way to open sidebar on mobile or just smaller screens

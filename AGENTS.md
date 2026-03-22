@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Pally is a web-first project and task application with strong Github two-way sync.
+Pally is a web-first project and task application with strong Github two-way sync. It is inspired by [Linear](https://linear.app) and Github Projects/Issues 
 
 ## Rules
 - Never change the version of dependencies without asking

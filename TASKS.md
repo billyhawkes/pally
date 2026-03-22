@@ -61,7 +61,7 @@ Goal: Connect TanStack DB to the Effect API and display data in the UI.
 - [x] Improve seeding by adding seed data on org creation not start. Add example projects/teams/tasks on org creation.
 - [x] Build table view for tasks (use tanstack table)
 - [x] Build board view for tasks (with dnd)
-- [ ] Create task popup form
+- [ ] Create task popup form (try to use the effect schema and atom for state)
 - [ ] Setup task dynamic filters (e.g. status, priority, etc.)
 - [ ] Projects crud
 - [ ] Command palette with all actions

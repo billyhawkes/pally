@@ -14,6 +14,7 @@ type TaskContextMenuProps = {
   moveTask: (task: Task, status: Task["status"]) => void
   changePriority: (task: Task, priority: Task["priority"]) => void
   removeTask: (task: Task) => void
+  onEditTask: (task: Task) => void
 }
 
 export function TaskContextMenu({
@@ -22,6 +23,7 @@ export function TaskContextMenu({
   moveTask,
   changePriority,
   removeTask,
+  onEditTask,
 }: TaskContextMenuProps) {
   return (
     <DropdownMenu
@@ -50,6 +52,7 @@ export function TaskContextMenu({
           moveTask={moveTask}
           changePriority={changePriority}
           removeTask={removeTask}
+          onEditTask={onEditTask}
           onAction={() => setContextMenu(null)}
         />
       ) : null}

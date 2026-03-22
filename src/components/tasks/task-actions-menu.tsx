@@ -22,6 +22,7 @@ type TaskActionsMenuContentProps = {
   moveTask: (task: Task, status: Task["status"]) => void
   changePriority: (task: Task, priority: Task["priority"]) => void
   removeTask: (task: Task) => void
+  onEditTask: (task: Task) => void
   onAction?: () => void
 }
 
@@ -30,12 +31,21 @@ export function TaskActionsMenuContent({
   moveTask,
   changePriority,
   removeTask,
+  onEditTask,
   onAction,
 }: TaskActionsMenuContentProps) {
   return (
     <DropdownMenuContent align="end" className="w-52">
       <DropdownMenuLabel>{task.title}</DropdownMenuLabel>
       <DropdownMenuSeparator />
+      <DropdownMenuItem
+        onClick={() => {
+          onEditTask(task)
+          onAction?.()
+        }}
+      >
+        Edit task
+      </DropdownMenuItem>
       <DropdownMenuSub>
         <DropdownMenuSubTrigger>Change status</DropdownMenuSubTrigger>
         <DropdownMenuSubContent>

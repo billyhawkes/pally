@@ -17,6 +17,9 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import {
+  CreateTaskDialog,
+} from "@/components/tasks/create-task-dialog"
+import {
   TaskActionsMenuContent,
   TaskActionsMenuTriggerButton,
 } from "@/components/tasks/task-actions-menu"
@@ -26,11 +29,14 @@ import {
 } from "@/components/tasks/task-context-menu"
 import {
   formatDate,
-  priorityColors,
   statusColors,
   statusLabels,
   statuses,
 } from "@/components/tasks/task-view-utils"
+import {
+  TaskPriorityBadgeSelect,
+  TaskStatusBadgeSelect,
+} from "@/components/tasks/task-property-badges"
 
 type TaskBoardViewProps = {
   tasks: ReadonlyArray<Task>
@@ -46,6 +52,7 @@ export function TaskBoardView({
   const [draggedTaskId, setDraggedTaskId] = useState<Task["id"] | null>(null)
   const [dropStatus, setDropStatus] = useState<Task["status"] | null>(null)
   const [contextMenu, setContextMenu] = useState<TaskContextMenuState | null>(null)
+  const [editingTask, setEditingTask] = useState<Task | null>(null)
 
   const tasksByStatus = useMemo(
     () => {
@@ -160,9 +167,12 @@ export function TaskBoardView({
                       key={task.id}
                       draggable
                       className={cn(
-                        "cursor-grab border bg-background/95 shadow-sm active:cursor-grabbing",
+                        "cursor-pointer border bg-background/95 shadow-sm",
                         draggedTaskId === task.id && "opacity-60",
                       )}
+                      onClick={() => {
+                        setEditingTask(task)
+                      }}
                       onContextMenu={(event) => {
                         event.preventDefault()
                         setContextMenu({
@@ -210,6 +220,7 @@ export function TaskBoardView({
                               moveTask={moveTask}
                               changePriority={changePriority}
                               removeTask={removeTask}
+                              onEditTask={setEditingTask}
                             />
                           </DropdownMenu>
                         </div>
@@ -217,10 +228,14 @@ export function TaskBoardView({
 
                       <CardContent className="space-y-3 pt-0">
                         <div className="flex flex-wrap gap-2">
-                          <Badge className={statusColors[task.status]}>
-                            {statusLabels[task.status]}
-                          </Badge>
-                          <Badge className={priorityColors[task.priority]}>{task.priority}</Badge>
+                          <TaskStatusBadgeSelect
+                            status={task.status}
+                            onStatusChange={(status) => moveTask(task, status)}
+                          />
+                          <TaskPriorityBadgeSelect
+                            priority={task.priority}
+                            onPriorityChange={(priority) => changePriority(task, priority)}
+                          />
                         </div>
 
                         <p className="text-xs text-muted-foreground">
@@ -242,7 +257,20 @@ export function TaskBoardView({
         moveTask={moveTask}
         changePriority={changePriority}
         removeTask={removeTask}
+        onEditTask={setEditingTask}
       />
+
+      {editingTask ? (
+        <CreateTaskDialog
+          task={editingTask}
+          open
+          onOpenChange={(open) => {
+            if (!open) {
+              setEditingTask(null)
+            }
+          }}
+        />
+      ) : null}
     </>
   )
 }

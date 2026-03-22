@@ -1,13 +1,10 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useAtomValue, useAtomSet } from "@effect/atom-react";
-import type { Task, TeamId } from "@/lib/schemas";
+import { useAtomValue } from "@effect/atom-react";
+import type { OrganizationId, TeamId } from "@/lib/schemas";
 import { organizationsAtom } from "@/lib/atoms/organizations";
-import {
-  createTaskAtom,
-  useTasksAtom,
-} from "@/lib/atoms/tasks";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { useTasksAtom } from "@/lib/atoms/tasks";
+import { PallyClient } from "@/lib/pally-client";
+import { CreateTaskDialog } from "@/components/tasks/create-task-dialog";
 import {
   isTaskViewMode,
   TaskViews,
@@ -21,16 +18,30 @@ export const Route = createFileRoute("/org/$orgSlug/team/$teamSlug/tasks")({
   component: TeamTasksPage,
 });
 
+const teamsAtom = (organizationId?: OrganizationId | null) =>
+  PallyClient.query("teams", "listTeams", {
+    query: { organizationId: organizationId ?? undefined },
+    timeToLive: "5 minutes",
+    reactivityKeys: ["teams"],
+  });
+
 function TeamTasksPage() {
   const { orgSlug, teamSlug } = Route.useParams();
   const search = Route.useSearch();
   const navigate = useNavigate({ from: Route.fullPath });
   const organizations = useAtomValue(organizationsAtom);
-  const orgId =
+  const organization =
     organizations._tag === "Success"
-      ? (organizations.value.find((org) => org.slug === orgSlug)?.id ?? null)
+      ? (organizations.value.find((org) => org.slug === orgSlug) ?? null)
       : null;
+  const orgId =
+    organization?.id ?? null;
   const teamId = teamSlug as unknown as TeamId;
+  const teams = useAtomValue(teamsAtom(orgId));
+  const teamName =
+    teams._tag === "Success"
+      ? (teams.value.find((team) => team.id === teamId)?.name ?? teamSlug)
+      : teamSlug;
   const tasks = useTasksAtom();
   const filteredTasks =
     tasks._tag === "Success"
@@ -41,9 +52,14 @@ function TeamTasksPage() {
 
   return (
     <div className="p-6 space-y-6">
-      <h1 className="text-2xl font-bold">Team Tasks</h1>
-
-      <CreateTaskForm orgId={orgId} teamId={teamId} />
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h1 className="text-2xl font-bold">Team Tasks</h1>
+        <CreateTaskDialog
+          orgId={orgId}
+          teamId={teamId}
+          breadcrumbs={organization ? [organization.name, teamName] : [orgSlug, teamName]}
+        />
+      </div>
 
       <div className="space-y-2">
         {tasks._tag === "Initial" && (
@@ -65,44 +81,5 @@ function TeamTasksPage() {
           />}
       </div>
     </div>
-  );
-}
-
-function CreateTaskForm({
-  orgId,
-  teamId,
-}: {
-  orgId: Task["orgId"];
-  teamId: TeamId;
-}) {
-  const create = useAtomSet(createTaskAtom);
-
-  return (
-    <form
-      className="flex gap-2"
-      onSubmit={(e) => {
-        e.preventDefault();
-        const form = e.target as HTMLFormElement;
-        const data = new FormData(form);
-        const title = data.get("title") as string;
-        if (!title.trim()) return;
-        create({
-          payload: {
-            title: title.trim(),
-            description: null,
-            status: "todo",
-            priority: "medium",
-            orgId,
-            projectId: null,
-            teamId,
-          },
-          reactivityKeys: ["tasks"],
-        });
-        form.reset();
-      }}
-    >
-      <Input name="title" placeholder="New task..." className="flex-1" />
-      <Button type="submit">Add</Button>
-    </form>
   );
 }
