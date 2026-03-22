@@ -1,12 +1,15 @@
-import { useEffect, useState } from "react"
-import { Link, useRouter, useParams } from "@tanstack/react-router"
+import { useState, useMemo } from "react";
+import { Link, useRouter, useParams } from "@tanstack/react-router";
+import { useAtomValue } from "@effect/atom-react";
 import {
   ClipboardList,
   LogOut,
   ChevronsUpDown,
   Check,
   Building2,
-} from "lucide-react"
+  Users,
+  Plus,
+} from "lucide-react";
 
 import {
   Sidebar,
@@ -19,73 +22,86 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-} from "@/components/ui/sidebar"
+} from "@/components/ui/sidebar";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { authClient } from "@/lib/auth-client"
-import type { AuthState } from "@/lib/auth-context"
+} from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Input } from "@/components/ui/input";
+import { authClient } from "@/lib/auth-client";
+import { PallyClient } from "@/lib/pally-client";
+import type { AuthState } from "@/lib/auth-context";
 
-const navItems = [{ title: "Tasks", icon: ClipboardList }] as const
+const navItems = [{ title: "Tasks", icon: ClipboardList }] as const;
 
-type OrganizationData = {
-  id: string
-  name: string
-  slug: string | null
-  logo?: string | null
-  metadata?: unknown
-  createdAt: Date
-}
+const organizationsAtom = PallyClient.query(
+  "organizations",
+  "listOrganizations",
+  { timeToLive: "5 minutes", reactivityKeys: ["organizations"] },
+);
 
 export function AppSidebar({
   auth,
 }: {
-  auth: NonNullable<AuthState["session"]>
+  auth: NonNullable<AuthState["session"]>;
 }) {
-  const router = useRouter()
-  const params = useParams({ from: "/_authenticated/$orgSlug" })
-  const currentOrgSlug = params.orgSlug
-  const [organizations, setOrganizations] = useState<OrganizationData[]>([])
-  const [activeOrg, setActiveOrg] = useState<OrganizationData | null>(null)
+  const router = useRouter();
+  const params = useParams({ from: "/_authenticated/$orgSlug" });
+  const currentOrgSlug = params.orgSlug;
 
-  useEffect(() => {
-    loadOrganizations()
-  }, [])
+  const orgsResult = useAtomValue(organizationsAtom);
+  const organizations =
+    orgsResult._tag === "Success" ? orgsResult.value : [];
 
-  async function loadOrganizations() {
-    const { data } = await authClient.organization.list()
-    if (data) {
-      const orgs = data as unknown as OrganizationData[]
-      setOrganizations(orgs)
-      const sessionData = auth.session as unknown as {
-        activeOrganizationId?: string | null
-      }
-      if (sessionData.activeOrganizationId) {
-        const active = orgs.find(
-          (org) => org.id === sessionData.activeOrganizationId,
-        )
-        setActiveOrg(active ?? null)
-      }
-    }
+  const activeOrg =
+    currentOrgSlug && currentOrgSlug !== "personal"
+      ? organizations.find((o) => o.slug === currentOrgSlug) ?? null
+      : null;
+
+  const teamsAtom = useMemo(
+    () =>
+      activeOrg
+        ? PallyClient.query("teams", "listTeams", {
+            query: { organizationId: activeOrg.id },
+            timeToLive: "5 minutes",
+            reactivityKeys: ["teams"],
+          })
+        : null,
+    [activeOrg?.id],
+  );
+
+  const teamsResult = teamsAtom ? useAtomValue(teamsAtom) : null;
+  const teams = teamsResult?._tag === "Success" ? teamsResult.value : [];
+
+  const [showCreateTeam, setShowCreateTeam] = useState(false);
+  const [newTeamName, setNewTeamName] = useState("");
+
+  async function handleCreateTeam(e: React.FormEvent) {
+    e.preventDefault();
+    if (!newTeamName.trim() || !activeOrg) return;
+    await authClient.organization.createTeam({
+      name: newTeamName.trim(),
+      organizationId: activeOrg.id,
+    });
+    setNewTeamName("");
+    setShowCreateTeam(false);
   }
 
-  async function handleSetActiveOrg(org: OrganizationData | null) {
+  async function handleSetActiveOrg(org: { id: string; slug: string | null } | null) {
     await authClient.organization.setActive({
       organizationId: org?.id ?? null,
-    })
-    setActiveOrg(org)
-    const slug = org?.slug ?? "personal"
-    router.navigate({ to: "/$orgSlug/tasks", params: { orgSlug: slug } })
+    });
+    const slug = org?.slug ?? "personal";
+    router.navigate({ to: "/$orgSlug/tasks", params: { orgSlug: slug } });
   }
 
   async function handleSignOut() {
-    await authClient.signOut()
-    router.navigate({ to: "/login", search: { redirect: "/" } })
+    await authClient.signOut();
+    router.navigate({ to: "/login", search: { redirect: "/" } });
   }
 
   const userInitials = auth.user.name
@@ -95,7 +111,7 @@ export function AppSidebar({
         .join("")
         .toUpperCase()
         .slice(0, 2)
-    : auth.user.email.slice(0, 2).toUpperCase()
+    : auth.user.email.slice(0, 2).toUpperCase();
 
   return (
     <Sidebar>
@@ -157,7 +173,10 @@ export function AppSidebar({
               {navItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
-                    <Link to="/$orgSlug/tasks" params={{ orgSlug: currentOrgSlug }}>
+                    <Link
+                      to="/$orgSlug/tasks"
+                      params={{ orgSlug: currentOrgSlug }}
+                    >
                       <item.icon className="size-4" />
                       <span>{item.title}</span>
                     </Link>
@@ -167,6 +186,62 @@ export function AppSidebar({
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+
+        {activeOrg && (
+          <SidebarGroup>
+            <SidebarGroupLabel className="flex items-center justify-between">
+              <span>Teams</span>
+              <button
+                onClick={() => setShowCreateTeam(!showCreateTeam)}
+                className="rounded p-0.5 hover:bg-sidebar-accent"
+              >
+                <Plus className="size-3.5" />
+              </button>
+            </SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {showCreateTeam && (
+                  <SidebarMenuItem>
+                    <form
+                      onSubmit={handleCreateTeam}
+                      className="flex gap-1 px-2 py-1"
+                    >
+                      <Input
+                        value={newTeamName}
+                        onChange={(e) => setNewTeamName(e.target.value)}
+                        placeholder="Team name"
+                        className="h-7 text-sm"
+                        autoFocus
+                      />
+                      <button
+                        type="submit"
+                        className="rounded px-2 text-xs hover:bg-sidebar-accent"
+                      >
+                        Add
+                      </button>
+                    </form>
+                  </SidebarMenuItem>
+                )}
+                {teams.map((team) => (
+                  <SidebarMenuItem key={team.id}>
+                    <SidebarMenuButton asChild>
+                      <Link
+                        to="/$orgSlug/team/$teamSlug/tasks"
+                        params={{
+                          orgSlug: currentOrgSlug,
+                          teamSlug: team.id,
+                        }}
+                      >
+                        <Users className="size-4" />
+                        <span>{team.name}</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
       </SidebarContent>
 
       <SidebarFooter>
@@ -208,5 +283,5 @@ export function AppSidebar({
         </SidebarMenu>
       </SidebarFooter>
     </Sidebar>
-  )
+  );
 }

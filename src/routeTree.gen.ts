@@ -18,6 +18,8 @@ import { Route as AuthenticatedOrgSlugRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedOrgSlugIndexRouteImport } from './routes/_authenticated/$orgSlug/index'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth.$'
 import { Route as AuthenticatedOrgSlugTasksRouteImport } from './routes/_authenticated/$orgSlug/tasks'
+import { Route as AuthenticatedOrgSlugTeamTeamSlugRouteImport } from './routes/_authenticated/$orgSlug/team/$teamSlug'
+import { Route as AuthenticatedOrgSlugTeamTeamSlugTasksRouteImport } from './routes/_authenticated/$orgSlug/team/$teamSlug/tasks'
 
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
@@ -65,6 +67,18 @@ const AuthenticatedOrgSlugTasksRoute =
     path: '/tasks',
     getParentRoute: () => AuthenticatedOrgSlugRoute,
   } as any)
+const AuthenticatedOrgSlugTeamTeamSlugRoute =
+  AuthenticatedOrgSlugTeamTeamSlugRouteImport.update({
+    id: '/team/$teamSlug',
+    path: '/team/$teamSlug',
+    getParentRoute: () => AuthenticatedOrgSlugRoute,
+  } as any)
+const AuthenticatedOrgSlugTeamTeamSlugTasksRoute =
+  AuthenticatedOrgSlugTeamTeamSlugTasksRouteImport.update({
+    id: '/tasks',
+    path: '/tasks',
+    getParentRoute: () => AuthenticatedOrgSlugTeamTeamSlugRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -75,6 +89,8 @@ export interface FileRoutesByFullPath {
   '/$orgSlug/tasks': typeof AuthenticatedOrgSlugTasksRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/$orgSlug/': typeof AuthenticatedOrgSlugIndexRoute
+  '/$orgSlug/team/$teamSlug': typeof AuthenticatedOrgSlugTeamTeamSlugRouteWithChildren
+  '/$orgSlug/team/$teamSlug/tasks': typeof AuthenticatedOrgSlugTeamTeamSlugTasksRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -84,6 +100,8 @@ export interface FileRoutesByTo {
   '/$orgSlug/tasks': typeof AuthenticatedOrgSlugTasksRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/$orgSlug': typeof AuthenticatedOrgSlugIndexRoute
+  '/$orgSlug/team/$teamSlug': typeof AuthenticatedOrgSlugTeamTeamSlugRouteWithChildren
+  '/$orgSlug/team/$teamSlug/tasks': typeof AuthenticatedOrgSlugTeamTeamSlugTasksRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -96,6 +114,8 @@ export interface FileRoutesById {
   '/_authenticated/$orgSlug/tasks': typeof AuthenticatedOrgSlugTasksRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/_authenticated/$orgSlug/': typeof AuthenticatedOrgSlugIndexRoute
+  '/_authenticated/$orgSlug/team/$teamSlug': typeof AuthenticatedOrgSlugTeamTeamSlugRouteWithChildren
+  '/_authenticated/$orgSlug/team/$teamSlug/tasks': typeof AuthenticatedOrgSlugTeamTeamSlugTasksRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -108,6 +128,8 @@ export interface FileRouteTypes {
     | '/$orgSlug/tasks'
     | '/api/auth/$'
     | '/$orgSlug/'
+    | '/$orgSlug/team/$teamSlug'
+    | '/$orgSlug/team/$teamSlug/tasks'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -117,6 +139,8 @@ export interface FileRouteTypes {
     | '/$orgSlug/tasks'
     | '/api/auth/$'
     | '/$orgSlug'
+    | '/$orgSlug/team/$teamSlug'
+    | '/$orgSlug/team/$teamSlug/tasks'
   id:
     | '__root__'
     | '/'
@@ -128,6 +152,8 @@ export interface FileRouteTypes {
     | '/_authenticated/$orgSlug/tasks'
     | '/api/auth/$'
     | '/_authenticated/$orgSlug/'
+    | '/_authenticated/$orgSlug/team/$teamSlug'
+    | '/_authenticated/$orgSlug/team/$teamSlug/tasks'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -204,17 +230,49 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedOrgSlugTasksRouteImport
       parentRoute: typeof AuthenticatedOrgSlugRoute
     }
+    '/_authenticated/$orgSlug/team/$teamSlug': {
+      id: '/_authenticated/$orgSlug/team/$teamSlug'
+      path: '/team/$teamSlug'
+      fullPath: '/$orgSlug/team/$teamSlug'
+      preLoaderRoute: typeof AuthenticatedOrgSlugTeamTeamSlugRouteImport
+      parentRoute: typeof AuthenticatedOrgSlugRoute
+    }
+    '/_authenticated/$orgSlug/team/$teamSlug/tasks': {
+      id: '/_authenticated/$orgSlug/team/$teamSlug/tasks'
+      path: '/tasks'
+      fullPath: '/$orgSlug/team/$teamSlug/tasks'
+      preLoaderRoute: typeof AuthenticatedOrgSlugTeamTeamSlugTasksRouteImport
+      parentRoute: typeof AuthenticatedOrgSlugTeamTeamSlugRoute
+    }
   }
 }
+
+interface AuthenticatedOrgSlugTeamTeamSlugRouteChildren {
+  AuthenticatedOrgSlugTeamTeamSlugTasksRoute: typeof AuthenticatedOrgSlugTeamTeamSlugTasksRoute
+}
+
+const AuthenticatedOrgSlugTeamTeamSlugRouteChildren: AuthenticatedOrgSlugTeamTeamSlugRouteChildren =
+  {
+    AuthenticatedOrgSlugTeamTeamSlugTasksRoute:
+      AuthenticatedOrgSlugTeamTeamSlugTasksRoute,
+  }
+
+const AuthenticatedOrgSlugTeamTeamSlugRouteWithChildren =
+  AuthenticatedOrgSlugTeamTeamSlugRoute._addFileChildren(
+    AuthenticatedOrgSlugTeamTeamSlugRouteChildren,
+  )
 
 interface AuthenticatedOrgSlugRouteChildren {
   AuthenticatedOrgSlugTasksRoute: typeof AuthenticatedOrgSlugTasksRoute
   AuthenticatedOrgSlugIndexRoute: typeof AuthenticatedOrgSlugIndexRoute
+  AuthenticatedOrgSlugTeamTeamSlugRoute: typeof AuthenticatedOrgSlugTeamTeamSlugRouteWithChildren
 }
 
 const AuthenticatedOrgSlugRouteChildren: AuthenticatedOrgSlugRouteChildren = {
   AuthenticatedOrgSlugTasksRoute: AuthenticatedOrgSlugTasksRoute,
   AuthenticatedOrgSlugIndexRoute: AuthenticatedOrgSlugIndexRoute,
+  AuthenticatedOrgSlugTeamTeamSlugRoute:
+    AuthenticatedOrgSlugTeamTeamSlugRouteWithChildren,
 }
 
 const AuthenticatedOrgSlugRouteWithChildren =

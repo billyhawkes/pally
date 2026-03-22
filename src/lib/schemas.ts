@@ -19,6 +19,9 @@ export type ProjectId = typeof ProjectId.Type;
 export const ViewId = Schema.String.pipe(Schema.brand("ViewId"));
 export type ViewId = typeof ViewId.Type;
 
+export const TeamId = Schema.String.pipe(Schema.brand("TeamId"));
+export type TeamId = typeof TeamId.Type;
+
 // Enums
 export const TaskStatus = Schema.Literals(["todo", "in_progress", "done"]);
 export type TaskStatus = typeof TaskStatus.Type;
@@ -39,6 +42,7 @@ export const Task = Schema.Struct({
   status: TaskStatus,
   priority: TaskPriority,
   projectId: Schema.NullOr(ProjectId),
+  teamId: Schema.NullOr(TeamId),
   createdAt: DateFromHttp,
   updatedAt: DateFromHttp,
 });
@@ -50,6 +54,7 @@ export const CreateTaskPayload = Schema.Struct({
   status: TaskStatus,
   priority: TaskPriority,
   projectId: Schema.NullOr(ProjectId),
+  teamId: Schema.NullOr(TeamId),
 });
 export type CreateTaskPayload = typeof CreateTaskPayload.Type;
 
@@ -59,6 +64,7 @@ export const UpdateTaskPayload = Schema.Struct({
   status: Schema.optionalKey(TaskStatus),
   priority: Schema.optionalKey(TaskPriority),
   projectId: Schema.optionalKey(Schema.NullOr(ProjectId)),
+  teamId: Schema.optionalKey(Schema.NullOr(TeamId)),
 });
 export type UpdateTaskPayload = typeof UpdateTaskPayload.Type;
 
@@ -144,6 +150,24 @@ export const SessionData = Schema.Struct({
   session: Session,
 });
 export type SessionData = typeof SessionData.Type;
+
+// Organization and Team types
+export const Organization = Schema.Struct({
+  id: Schema.String,
+  name: Schema.String,
+  slug: Schema.String,
+  logo: Schema.NullOr(Schema.String),
+  createdAt: DateFromHttp,
+});
+export type Organization = typeof Organization.Type;
+
+export const Team = Schema.Struct({
+  id: Schema.String,
+  name: Schema.String,
+  organizationId: Schema.String,
+  createdAt: DateFromHttp,
+});
+export type Team = typeof Team.Type;
 
 // Error types
 export class UnauthorizedError extends Schema.TaggedErrorClass(

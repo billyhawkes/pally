@@ -1,9 +1,11 @@
 import { Schema } from "effect"
 import { HttpApi, HttpApiEndpoint, HttpApiGroup } from "effect/unstable/httpapi"
+import { Authentication } from "./auth-middleware"
 import {
   CreateProjectPayload,
   CreateTaskPayload,
   CreateViewPayload,
+  Organization,
   Project,
   ProjectId,
   ProjectNotFoundError,
@@ -12,6 +14,8 @@ import {
   TaskNotFoundError,
   TaskPriority,
   TaskStatus,
+  Team,
+  TeamId,
   UpdateProjectPayload,
   UpdateTaskPayload,
   UpdateViewPayload,
@@ -26,6 +30,7 @@ const listTasks = HttpApiEndpoint.get("listTasks", "/tasks", {
     status: Schema.optionalKey(TaskStatus),
     priority: Schema.optionalKey(TaskPriority),
     projectId: Schema.optionalKey(ProjectId),
+    teamId: Schema.optionalKey(TeamId),
   }),
   success: Schema.Array(Task),
 })
@@ -62,7 +67,7 @@ const deleteTask = HttpApiEndpoint.delete("deleteTask", "/tasks/:id", {
 
 const tasksGroup = HttpApiGroup.make("tasks")
   .add(listTasks, getTask, createTask, updateTask, deleteTask)
-  .prefix("/api")
+  .middleware(Authentication)
 
 // Project endpoints
 const listProjects = HttpApiEndpoint.get("listProjects", "/projects", {
@@ -101,7 +106,7 @@ const deleteProject = HttpApiEndpoint.delete("deleteProject", "/projects/:id", {
 
 const projectsGroup = HttpApiGroup.make("projects")
   .add(listProjects, getProject, createProject, updateProject, deleteProject)
-  .prefix("/api")
+  .middleware(Authentication)
 
 // View endpoints
 const listViews = HttpApiEndpoint.get("listViews", "/views", {
@@ -140,10 +145,33 @@ const deleteView = HttpApiEndpoint.delete("deleteView", "/views/:id", {
 
 const viewsGroup = HttpApiGroup.make("views")
   .add(listViews, getView, createView, updateView, deleteView)
-  .prefix("/api")
+  .middleware(Authentication)
+
+// Organization endpoints
+const listOrganizations = HttpApiEndpoint.get("listOrganizations", "/organizations", {
+  success: Schema.Array(Organization),
+})
+
+const organizationsGroup = HttpApiGroup.make("organizations")
+  .add(listOrganizations)
+  .middleware(Authentication)
+
+// Team endpoints
+const listTeams = HttpApiEndpoint.get("listTeams", "/teams", {
+  query: Schema.Struct({
+    organizationId: Schema.String,
+  }),
+  success: Schema.Array(Team),
+})
+
+const teamsGroup = HttpApiGroup.make("teams")
+  .add(listTeams)
+  .middleware(Authentication)
 
 // Main API
 export const PallyApi = HttpApi.make("PallyApi")
   .add(tasksGroup)
   .add(projectsGroup)
   .add(viewsGroup)
+  .add(organizationsGroup)
+  .add(teamsGroup)

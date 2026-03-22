@@ -7,6 +7,7 @@ export const tasks = pgTable("tasks", {
   status: varchar("status", { length: 50 }).notNull().default("todo"),
   priority: varchar("priority", { length: 50 }).notNull().default("medium"),
   projectId: varchar("project_id", { length: 255 }),
+  teamId: varchar("team_id", { length: 255 }),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 })

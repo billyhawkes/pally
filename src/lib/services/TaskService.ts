@@ -6,6 +6,7 @@ import {
   Task,
   TaskId,
   TaskNotFoundError,
+  TeamId,
   UpdateTaskPayload,
 } from "@/lib/schemas";
 import type { TaskPriority, TaskStatus } from "@/lib/schemas";
@@ -22,6 +23,7 @@ export class TaskService extends ServiceMap.Service<
       status?: TaskStatus | undefined;
       priority?: TaskPriority | undefined;
       projectId?: ProjectId | undefined;
+      teamId?: TeamId | undefined;
     }) => Effect.Effect<readonly Task[]>;
     readonly findById: (id: TaskId) => Effect.Effect<Task, TaskNotFoundError>;
     readonly create: (payload: CreateTaskPayload) => Effect.Effect<Task>;
@@ -41,6 +43,7 @@ export class TaskService extends ServiceMap.Service<
         status?: TaskStatus | undefined;
         priority?: TaskPriority | undefined;
         projectId?: ProjectId | undefined;
+        teamId?: TeamId | undefined;
       }) {
         const conditions = [];
         if (filters?.status) {
@@ -51,6 +54,9 @@ export class TaskService extends ServiceMap.Service<
         }
         if (filters?.projectId) {
           conditions.push(eq(tasks.projectId, filters.projectId as string));
+        }
+        if (filters?.teamId) {
+          conditions.push(eq(tasks.teamId, filters.teamId as string));
         }
 
         const query =
@@ -94,6 +100,7 @@ export class TaskService extends ServiceMap.Service<
             status: payload.status,
             priority: payload.priority,
             projectId: payload.projectId,
+            teamId: payload.teamId,
           }),
         );
         return decodeTask({
@@ -103,6 +110,7 @@ export class TaskService extends ServiceMap.Service<
           status: payload.status,
           priority: payload.priority,
           projectId: payload.projectId,
+          teamId: payload.teamId,
           createdAt: new Date(now),
           updatedAt: new Date(now),
         });
@@ -123,6 +131,8 @@ export class TaskService extends ServiceMap.Service<
         if ("priority" in payload) setValues.priority = payload.priority;
         if ("projectId" in payload)
           setValues.projectId = payload.projectId ?? null;
+        if ("teamId" in payload)
+          setValues.teamId = payload.teamId ?? null;
 
         yield* dbQuery(
           db
@@ -145,6 +155,10 @@ export class TaskService extends ServiceMap.Service<
             "projectId" in payload
               ? (payload.projectId ?? null)
               : existing.projectId,
+          teamId:
+            "teamId" in payload
+              ? (payload.teamId ?? null)
+              : existing.teamId,
           createdAt: existing.createdAt,
           updatedAt: new Date(now),
         });

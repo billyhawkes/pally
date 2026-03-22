@@ -1,7 +1,8 @@
 import { Effect, Layer } from "effect"
 import { HttpApiBuilder } from "effect/unstable/httpapi"
 import { PallyApi } from "./api"
-import { TaskService, ProjectService, ViewService } from "./services/index"
+import { CurrentSession, AuthenticationLive } from "./auth-middleware"
+import { TaskService, ProjectService, ViewService, OrganizationService, TeamService, AuthService } from "./services/index"
 import { DBLive } from "@/db/layer"
 
 // Tasks group implementation
@@ -17,6 +18,7 @@ const tasksGroupLive = HttpApiBuilder.group(
             status: query.status,
             priority: query.priority,
             projectId: query.projectId,
+            teamId: query.teamId,
           })
         })
       )
@@ -122,15 +124,51 @@ const viewsGroupLive = HttpApiBuilder.group(
       )
 )
 
+// Organizations group implementation
+const organizationsGroupLive = HttpApiBuilder.group(
+  PallyApi,
+  "organizations",
+  (handlers) =>
+    handlers
+      .handle("listOrganizations", () =>
+        Effect.gen(function* () {
+          const session = yield* CurrentSession
+          const orgService = yield* OrganizationService
+          return yield* orgService.listForUser(session.user.id)
+        })
+      )
+)
+
+// Teams group implementation
+const teamsGroupLive = HttpApiBuilder.group(
+  PallyApi,
+  "teams",
+  (handlers) =>
+    handlers
+      .handle("listTeams", ({ query }) =>
+        Effect.gen(function* () {
+          const teamService = yield* TeamService
+          return yield* teamService.listByOrg(query.organizationId)
+        })
+      )
+)
+
 // Compose all layers
+const authLayer = AuthenticationLive.pipe(Layer.provide(AuthService.layer))
+
 export const apiLayer = HttpApiBuilder.layer(PallyApi, {
   openapiPath: "/api/openapi.json",
 }).pipe(
   Layer.provide(tasksGroupLive),
   Layer.provide(projectsGroupLive),
   Layer.provide(viewsGroupLive),
+  Layer.provide(organizationsGroupLive),
+  Layer.provide(teamsGroupLive),
+  Layer.provide(authLayer),
   Layer.provide(TaskService.layer),
   Layer.provide(ProjectService.layer),
   Layer.provide(ViewService.layer),
+  Layer.provide(OrganizationService.layer),
+  Layer.provide(TeamService.layer),
   Layer.provide(DBLive)
 )

@@ -68,6 +68,7 @@ const taskCreateCommand = Command.make("create", { title: taskTitle }, ({ title 
       status: "todo",
       priority: "medium",
       projectId: null,
+      teamId: null,
     })
     yield* Console.log(`Created task #${task.id}: ${task.title}`)
   })
