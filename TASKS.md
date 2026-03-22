@@ -65,6 +65,7 @@ Goal: Connect TanStack DB to the Effect API and display data in the UI.
 - [x] Setup task dynamic filters (e.g. status, priority, etc.)
 - [x] Projects crud
 - [x] Command palette with all actions
+- [x] Marketing frontend page
 
 ## Phase 6: Github Integration
 Goal: Connect Github with the Effect API with two-way syncing.
@@ -73,7 +74,15 @@ Goal: Connect Github with the Effect API with two-way syncing.
 - [x] Build two-way Github repository issue syncing with Pally repository Github App
 - [ ] Verify webhook sync (need public url)
 
-## Phase 7: New features
+## Phase 7: Reorganization
+Goal: Reorganize and clean up the codebase. 
+
+- [ ] Hosting setup
+- [ ] Documentation (self hosted, sync, etc.)
+- [ ] Automated service and end-to-end testing
+- [ ] OpenTelemetry integration
+
+## Phase 8: New features
 Goal: Grow the featureset of Pally.
 
 - [ ] Organization members page and CRUD
@@ -83,7 +92,4 @@ Goal: Grow the featureset of Pally.
 - [ ] CompletedAt date
 - [ ] Filtering based on date range
 - [ ] Views (save filters as a view to view later)
-- [ ] Marketing frontend page
-- [ ] OpenTelemetry integration
-- [ ] Automated service and end-to-end testing
-- [ ] Documentation (self hosted, sync, etc.)
+- [ ] Organization settings (statuses, priorities, types, etc.)
