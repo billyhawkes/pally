@@ -17,7 +17,7 @@ const createTaskAtom = PallyClient.mutation("tasks", "createTask")
 const updateTaskAtom = PallyClient.mutation("tasks", "updateTask")
 const deleteTaskAtom = PallyClient.mutation("tasks", "deleteTask")
 
-export const Route = createFileRoute("/tasks")({
+export const Route = createFileRoute("/_authenticated/tasks")({
   component: TasksPage,
 })
 

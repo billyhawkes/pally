@@ -1,21 +1,24 @@
-import { HeadContent, Scripts, createRootRoute } from "@tanstack/react-router";
-import { RegistryProvider } from "@effect/atom-react";
+import {
+  HeadContent,
+  Scripts,
+  createRootRouteWithContext,
+} from "@tanstack/react-router"
+import { RegistryProvider } from "@effect/atom-react"
+import { AuthProvider } from "@/lib/auth-context"
 
-import appCss from "@/styles.css?url";
+import appCss from "@/styles.css?url"
 
-export const Route = createRootRoute({
+export const Route = createRootRouteWithContext()({
   head: () => ({
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: "Pally" },
     ],
-    links: [
-      { rel: "stylesheet", href: appCss },
-    ],
+    links: [{ rel: "stylesheet", href: appCss }],
   }),
   shellComponent: RootDocument,
-});
+})
 
 function RootDocument({ children }: { children: React.ReactNode }) {
   return (
@@ -25,10 +28,10 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       </head>
       <body className="min-h-screen bg-background font-sans antialiased">
         <RegistryProvider>
-          {children}
+          <AuthProvider>{children}</AuthProvider>
         </RegistryProvider>
         <Scripts />
       </body>
     </html>
-  );
+  )
 }

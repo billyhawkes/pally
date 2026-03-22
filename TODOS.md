@@ -48,7 +48,7 @@ Goal: Connect TanStack DB to the Effect API and display data in the UI.
 
 - [x] Setup shadcn
 - [x] Create Effect Atom HttpApi client (replaces TanStack DB)
-- [ ] Build list/board view components for tasks
+- [x] Build login/logout UI
 - [ ] Build sidebar navigation with Better Auth teams/organizations
-- [ ] Build login/logout UI
+- [ ] Build list/board view components for tasks
 - [ ] Display live data from the API in the web app
