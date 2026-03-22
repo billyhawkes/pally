@@ -109,7 +109,40 @@ export const UpdateViewPayload = Schema.Struct({
 })
 export type UpdateViewPayload = typeof UpdateViewPayload.Type
 
+// Auth types
+export const User = Schema.Struct({
+  id: Schema.String,
+  name: Schema.String,
+  email: Schema.String,
+  emailVerified: Schema.Boolean,
+  createdAt: Schema.Date,
+  updatedAt: Schema.Date,
+})
+export type User = typeof User.Type
+
+export const Session = Schema.Struct({
+  id: Schema.String,
+  userId: Schema.String,
+  expiresAt: Schema.Date,
+  createdAt: Schema.Date,
+  updatedAt: Schema.Date,
+  token: Schema.String,
+})
+export type Session = typeof Session.Type
+
+export const SessionData = Schema.Struct({
+  user: User,
+  session: Session,
+})
+export type SessionData = typeof SessionData.Type
+
 // Error types
+export class UnauthorizedError extends Schema.TaggedErrorClass(
+  "UnauthorizedError",
+)("UnauthorizedError", {
+  message: Schema.String,
+}) {}
+
 export class TaskNotFoundError extends Schema.TaggedErrorClass(
   "TaskNotFoundError",
 )("TaskNotFoundError", {

@@ -39,9 +39,9 @@ Goal: Connect real persistence via Postgres, Drizzle, and Effect SQL.
 ## Phase 4: Auth
 Goal: Set up authentication with Better Auth integrated via Effect and drizzle.
 
-- [ ] AuthService — Better Auth integration via Effect
-- [ ] Enable login/logout flows
-- [ ] Enable teams/organizations plugins
+- [x] AuthService — Better Auth integration via Effect
+- [x] Enable login/logout flows
+- [x] Enable teams/organizations plugins
 
 ## Phase 5: Frontend
 Goal: Connect TanStack DB to the Effect API and display data in the UI.

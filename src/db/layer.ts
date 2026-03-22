@@ -2,13 +2,14 @@ import { Pool } from "pg"
 import { drizzle } from "drizzle-orm/node-postgres"
 import { ServiceMap, Effect, Layer } from "effect"
 import * as schema from "./schema"
+import * as authSchema from "./auth-schema"
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL!,
   max: 10,
 })
 
-const db = drizzle({ client: pool, schema })
+export const db = drizzle({ client: pool, schema: { ...schema, ...authSchema } })
 
 export type DBShape = typeof db
 
