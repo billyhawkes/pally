@@ -80,19 +80,48 @@ GitHub variables are optional unless you want GitHub sign-in or repository synci
 4. Start Postgres:
 
 ```bash
-docker compose up -d
+docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d postgres
 ```
 
 5. Run database migrations:
 
 ```bash
-bunx drizzle-kit migrate --config drizzle.config.ts
+bun run migrate
 ```
 
 6. Start the development server:
 
 ```bash
 bun run dev
+```
+
+## Docker
+
+To run the full production-style stack with Docker:
+
+1. Copy the example environment file and set at least `BETTER_AUTH_SECRET`:
+
+```bash
+cp .env.example .env
+```
+
+2. Start Postgres and the app:
+
+```bash
+docker compose up --build
+```
+
+This production-style compose file keeps Postgres off the host network by default, and the app runs migrations before starting.
+
+Docker Compose automatically points the app container at the `postgres` service, so your local `.env` can keep using `localhost` for development while the container uses the internal Docker hostname.
+
+Useful commands:
+
+```bash
+docker compose up --build -d
+docker compose logs -f app
+docker compose down
+docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d postgres
 ```
 
 ## Self-Hosting Notes

@@ -20,6 +20,8 @@
     "typecheck": "tsc --noEmit",
     "dev": "vite dev --port 3000",
     "build": "vite build",
+    "migrate": "drizzle-kit migrate --config drizzle.config.ts",
+    "start": "bun run migrate && bun run scripts/server.ts",
     "preview": "vite preview",
     "cli": "bun run src/cli.ts"
   },
