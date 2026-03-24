@@ -1,3 +1,40 @@
+CREATE TABLE "projects" (
+	"id" varchar(255) PRIMARY KEY,
+	"name" varchar(255) NOT NULL,
+	"description" text,
+	"org_id" varchar(255),
+	"team_id" varchar(255),
+	"github_repository_full_name" varchar(255),
+	"github_installation_id" varchar(255),
+	"created_at" timestamp DEFAULT now() NOT NULL,
+	"updated_at" timestamp DEFAULT now() NOT NULL
+);
+--> statement-breakpoint
+CREATE TABLE "tasks" (
+	"id" varchar(255) PRIMARY KEY,
+	"title" varchar(255) NOT NULL,
+	"description" text,
+	"status" varchar(50) DEFAULT 'todo' NOT NULL,
+	"priority" varchar(50) DEFAULT 'medium' NOT NULL,
+	"org_id" varchar(255),
+	"project_id" varchar(255),
+	"team_id" varchar(255),
+	"github_issue_number" integer,
+	"github_issue_id" varchar(255),
+	"github_issue_url" text,
+	"created_at" timestamp DEFAULT now() NOT NULL,
+	"updated_at" timestamp DEFAULT now() NOT NULL
+);
+--> statement-breakpoint
+CREATE TABLE "views" (
+	"id" varchar(255) PRIMARY KEY,
+	"name" varchar(255) NOT NULL,
+	"org_id" varchar(255),
+	"filters" jsonb NOT NULL,
+	"created_at" timestamp DEFAULT now() NOT NULL,
+	"updated_at" timestamp DEFAULT now() NOT NULL
+);
+--> statement-breakpoint
 CREATE TABLE "account" (
 	"id" text PRIMARY KEY,
 	"account_id" text NOT NULL,
@@ -90,7 +127,6 @@ CREATE TABLE "verification" (
 	"updated_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-ALTER TABLE "tasks" ADD COLUMN "team_id" varchar(255);--> statement-breakpoint
 CREATE INDEX "account_userId_idx" ON "account" ("user_id");--> statement-breakpoint
 CREATE INDEX "invitation_organizationId_idx" ON "invitation" ("organization_id");--> statement-breakpoint
 CREATE INDEX "invitation_email_idx" ON "invitation" ("email");--> statement-breakpoint
