@@ -177,7 +177,7 @@ Notes:
 
 Use this when you want a full self-hosted stack on one server or VM.
 
-Create a `compose.yaml` file:
+Create a `docker-compose.yaml` file:
 
 ```yaml
 services:
@@ -185,13 +185,13 @@ services:
     image: postgres:18-alpine
     restart: unless-stopped
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: change-me
-      POSTGRES_DB: pally
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-pally}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d pally"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-pally}"]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -204,15 +204,15 @@ services:
         condition: service_healthy
     environment:
       PORT: 3000
-      DATABASE_URL: postgresql://postgres:change-me@postgres:5432/pally
-      BETTER_AUTH_SECRET: replace-with-a-long-random-string
-      BETTER_AUTH_URL: https://pally.your-domain.com
-      GITHUB_CLIENT_ID: ""
-      GITHUB_CLIENT_SECRET: ""
-      GITHUB_APP_ID: ""
-      GITHUB_APP_SLUG: ""
-      GITHUB_APP_PRIVATE_KEY: ""
-      GITHUB_APP_WEBHOOK_SECRET: ""
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-pally}
+      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET}
+      BETTER_AUTH_URL: ${BETTER_AUTH_URL:-http://localhost:3000}
+      GITHUB_CLIENT_ID: ${GITHUB_CLIENT_ID:-}
+      GITHUB_CLIENT_SECRET: ${GITHUB_CLIENT_SECRET:-}
+      GITHUB_APP_ID: ${GITHUB_APP_ID:-}
+      GITHUB_APP_SLUG: ${GITHUB_APP_SLUG:-}
+      GITHUB_APP_PRIVATE_KEY: ${GITHUB_APP_PRIVATE_KEY:-}
+      GITHUB_APP_WEBHOOK_SECRET: ${GITHUB_APP_WEBHOOK_SECRET:-}
     ports:
       - "3000:3000"
 
