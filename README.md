@@ -125,6 +125,7 @@ BETTER_AUTH_URL=https://pally.your-domain.com
 - `POSTGRES_DB`: Postgres database name
 - `DATABASE_URL`: connection string Pally uses to reach Postgres
 - `BETTER_AUTH_SECRET`: long random secret used to sign auth data and sessions
+- Generate `BETTER_AUTH_SECRET` with `openssl rand -base64 32`
 - `BETTER_AUTH_URL`: public base URL users visit in the browser
 
 #### Optional GitHub OAuth
