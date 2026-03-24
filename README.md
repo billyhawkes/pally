@@ -95,45 +95,176 @@ bun run migrate
 bun run dev
 ```
 
-## Docker
+## Self-Hosting
 
-To run the full production-style stack with Docker:
+Pally is built to run as a self-hosted app with Postgres and a single app container.
 
-1. Copy the example environment file and set at least `BETTER_AUTH_SECRET`:
+- The published container image is `ghcr.io/billyhawkes/pally:latest`
+- Postgres is required
+- Database migrations run automatically when the app starts
+- GitHub OAuth and GitHub App sync are optional
+- `docker run`, `docker compose`, and Coolify all work well
 
-```bash
-cp .env.example .env
+### Environment Variables
+
+These are the variables you should understand before deploying.
+
+#### Required
+
+```env
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=change-me
+POSTGRES_DB=pally
+DATABASE_URL=postgresql://postgres:change-me@postgres:5432/pally
+BETTER_AUTH_SECRET=replace-with-a-long-random-string
+BETTER_AUTH_URL=https://pally.your-domain.com
 ```
 
-2. Start Postgres and the app:
+- `POSTGRES_USER`: Postgres username
+- `POSTGRES_PASSWORD`: Postgres password
+- `POSTGRES_DB`: Postgres database name
+- `DATABASE_URL`: connection string Pally uses to reach Postgres
+- `BETTER_AUTH_SECRET`: long random secret used to sign auth data and sessions
+- `BETTER_AUTH_URL`: public base URL users visit in the browser
 
-```bash
-docker compose up --build
+#### Optional GitHub OAuth
+
+Only needed if you want GitHub sign-in or account linking.
+
+```env
+GITHUB_CLIENT_ID=
+GITHUB_CLIENT_SECRET=
 ```
 
-This production-style compose file keeps Postgres off the host network by default, and the app runs migrations before starting.
+#### Optional GitHub App Sync
 
-Docker Compose automatically points the app container at the `postgres` service, so your local `.env` can keep using `localhost` for development while the container uses the internal Docker hostname.
+Only needed if you want repository installs and two-way GitHub issue sync.
+
+```env
+GITHUB_APP_ID=
+GITHUB_APP_SLUG=
+GITHUB_APP_PRIVATE_KEY=
+GITHUB_APP_WEBHOOK_SECRET=
+```
+
+### Option 1: Docker Image + Existing Postgres
+
+Use this when you already have a Postgres server or managed database.
+
+```bash
+docker run -d \
+  --name pally \
+  -p 3000:3000 \
+  -e DATABASE_URL="postgresql://postgres:change-me@your-postgres-host:5432/pally" \
+  -e BETTER_AUTH_SECRET="replace-with-a-long-random-string" \
+  -e BETTER_AUTH_URL="https://pally.your-domain.com" \
+  -e GITHUB_CLIENT_ID="" \
+  -e GITHUB_CLIENT_SECRET="" \
+  -e GITHUB_APP_ID="" \
+  -e GITHUB_APP_SLUG="" \
+  -e GITHUB_APP_PRIVATE_KEY="" \
+  -e GITHUB_APP_WEBHOOK_SECRET="" \
+  ghcr.io/billyhawkes/pally:latest
+```
+
+Notes:
+
+- Replace `your-postgres-host` with the hostname of your Postgres server
+- Set `BETTER_AUTH_URL` to your real public HTTPS URL in production
+- `POSTGRES_USER`, `POSTGRES_PASSWORD`, and `POSTGRES_DB` are not required by the app container when `DATABASE_URL` is already set explicitly
+
+### Option 2: Docker Compose with Postgres
+
+Use this when you want a full self-hosted stack on one server or VM.
+
+Create a `compose.yaml` file:
+
+```yaml
+services:
+  postgres:
+    image: postgres:18-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: change-me
+      POSTGRES_DB: pally
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d pally"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  app:
+    image: ghcr.io/billyhawkes/pally:latest
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      PORT: 3000
+      DATABASE_URL: postgresql://postgres:change-me@postgres:5432/pally
+      BETTER_AUTH_SECRET: replace-with-a-long-random-string
+      BETTER_AUTH_URL: https://pally.your-domain.com
+      GITHUB_CLIENT_ID: ""
+      GITHUB_CLIENT_SECRET: ""
+      GITHUB_APP_ID: ""
+      GITHUB_APP_SLUG: ""
+      GITHUB_APP_PRIVATE_KEY: ""
+      GITHUB_APP_WEBHOOK_SECRET: ""
+    ports:
+      - "3000:3000"
+
+volumes:
+  postgres_data:
+```
+
+Then start it:
+
+```bash
+docker compose up -d
+```
 
 Useful commands:
 
 ```bash
-docker compose up --build -d
 docker compose logs -f app
 docker compose down
-docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d postgres
+docker compose pull
+docker compose up -d
 ```
 
-## Self-Hosting Notes
+### Coolify
 
-Pally is intended to run well as a self-hosted app.
+Pally is compatible with Coolify in both common deployment modes.
 
-- Postgres is the primary database
-- Docker is supported for local and server setup
-- GitHub integrations are optional, not required
-- The CLI and API are available in the same codebase
+#### Coolify Docker Image
 
-You can start with a local deployment and move to your own infrastructure without changing the core product model.
+Use `ghcr.io/billyhawkes/pally:latest` as the image and attach a Postgres service.
+
+- Expose port `3000`
+- Set `BETTER_AUTH_URL` to your final Coolify domain
+- Set `DATABASE_URL` using the Postgres service credentials Coolify provides
+- Add `BETTER_AUTH_SECRET` as a generated secret
+- Leave GitHub variables empty unless you are enabling those integrations
+
+#### Coolify Docker Compose
+
+You can also paste the compose example above into a Coolify Docker Compose service.
+
+- Keep the app service on port `3000`
+- Keep `DATABASE_URL` pointed at the `postgres` service hostname inside the compose network
+- Mount a persistent volume for Postgres data
+- Route your public domain to the app service
+- Set `BETTER_AUTH_URL` to the same public domain
+
+### Deployment Notes
+
+- Use HTTPS in production so auth callbacks and cookies behave correctly
+- Keep `BETTER_AUTH_SECRET` stable after first deployment
+- Back up the Postgres volume or managed database regularly
+- GitHub integrations can be added later without changing the core deployment shape
 
 ## Local URLs
 
